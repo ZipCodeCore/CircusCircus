@@ -183,7 +183,7 @@ def action_createaccount():
 	login_user(user)
 	return redirect("/")
 
-# AIDAN WAS HERE - Route to send a message
+# Action to send a message
 @login_required
 @app.route('/action_sendmessage', methods=['POST'])
 def action_sendmessage():
@@ -195,9 +195,11 @@ def action_sendmessage():
 	if user is None:
 		errors.append('User does not exist')
 		return render_template('createmessage.html', errors=errors)
+	# check if message is empty
 	if len(message_body) == 0:
 		errors.append('Cannot send empty message')
 		return render_template('createmessage.html', errors=errors)
+	# create new message and commit to database
 	new_message = DirectMessage(current_user.id, user.id, message_body)
 	db.session.add(new_message)
 	db.session.commit()
