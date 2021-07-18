@@ -158,6 +158,12 @@ def action_createaccount():
 	login_user(user)
 	return redirect("/")
 
+# AIDAN WAS HERE - Route to send a message
+@login_required
+@app.route('/action_sendmessage')
+def action_sendmessage():
+	pass
+
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
 
@@ -323,6 +329,13 @@ class Comment(db.Model):
 			self.savedresponce =  "Just a moment ago!"
 		return self.savedresponce
 
+
+# AIDAN WAS HERE
+class DirectMessage(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	sender_id = db.Column(db.Integer)
+	receiver_id = db.Column(db.Integer)
+	body = db.Column(db.String(256))  # limit 256 chars in message
 
 def init_site():
 	admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
