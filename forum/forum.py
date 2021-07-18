@@ -71,6 +71,10 @@ def get_messages_for_user():
 	senders = get_sending_usernames(messages)
 	return render_template('usermessages.html', messages=messages, senders=senders)
 
+@login_required
+@app.route('/createmessage')
+def createmessage():
+	return render_template('createmessage.html')
 
 def get_sending_usernames(msgs):
 	'''
@@ -181,9 +185,20 @@ def action_createaccount():
 
 # AIDAN WAS HERE - Route to send a message
 @login_required
-@app.route('/action_sendmessage')
+@app.route('/action_sendmessage', methods=['POST'])
 def action_sendmessage():
-	pass
+	errors = []
+	receiver_username = request.form['username']
+	message_body = request.form['message_body']
+	# check is user exists
+	user = User.query.filter_by(username=receiver_username).first()
+	if user is None:
+		errors.append('User does not exist')
+		return render_template('createmessage.html', errors=errors)
+	if len(message_body) == 0:
+		errors.append('Cannot send empty message')
+		return render_template('createmessage.html', errors=errors)
+	return render_template('messagesentsuccess.html')
 
 
 def error(errormessage):

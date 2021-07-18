@@ -1,7 +1,11 @@
 {% extends 'layout.html' %}
 {% block body %}
 <h1>Messages</h1>
-
+<br>
+<a class="btn btn-success" href="/createmessage" role="button">
+    New Message
+</a>
+<br>
 <div class="list-group">
     {% for msg in messages %}
     <a href="#" class="list-group-item list-group-item-action">
