@@ -164,6 +164,11 @@ def action_createaccount():
 def action_sendmessage():
 	pass
 
+@login_required
+@app.route('/get_messages_for_user')
+def get_messages_for_user():
+	return render_template('usermessages.html')
+
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
 
