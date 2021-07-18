@@ -2,6 +2,7 @@ from flask import *
 #from flask.ext.login import LoginManager, login_required, current_user, logout_user, login_user
 from flask_login import LoginManager, current_user, login_user, logout_user
 import datetime
+import sys
 
 from flask_login.utils import login_required
 from forum.app import app
@@ -61,6 +62,26 @@ def viewpost():
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
 	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+
+# Route to get all private messages for current user
+@login_required
+@app.route('/get_messages_for_user')
+def get_messages_for_user():	
+	messages = DirectMessage.query.filter_by(receiver_id=current_user.id)
+	senders = get_sending_usernames(messages)
+	return render_template('usermessages.html', messages=messages, senders=senders)
+
+
+def get_sending_usernames(msgs):
+	'''
+	Returns a dict of: {key: sender_id, value: sender_username}
+	'''
+	sending_usernames = {}
+	for msg in msgs:
+		user = User.query.filter_by(id=msg.sender_id).first()
+		if msg.sender_id not in sending_usernames:
+			sending_usernames[msg.sender_id] = user.username
+	return sending_usernames
 
 #ACTIONS
 
@@ -164,10 +185,6 @@ def action_createaccount():
 def action_sendmessage():
 	pass
 
-@login_required
-@app.route('/get_messages_for_user')
-def get_messages_for_user():
-	return render_template('usermessages.html')
 
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
