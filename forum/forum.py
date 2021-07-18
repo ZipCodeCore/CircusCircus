@@ -198,6 +198,9 @@ def action_sendmessage():
 	if len(message_body) == 0:
 		errors.append('Cannot send empty message')
 		return render_template('createmessage.html', errors=errors)
+	new_message = DirectMessage(current_user.id, user.id, message_body)
+	db.session.add(new_message)
+	db.session.commit()
 	return render_template('messagesentsuccess.html')
 
 
@@ -369,10 +372,16 @@ class Comment(db.Model):
 
 # AIDAN WAS HERE
 class DirectMessage(db.Model):
+
 	id = db.Column(db.Integer, primary_key=True)
 	sender_id = db.Column(db.Integer)
 	receiver_id = db.Column(db.Integer)
 	body = db.Column(db.String(256))  # limit 256 chars in message
+
+	def __init__(self, sender_id, receiver_id, body):
+		self.sender_id = sender_id
+		self.receiver_id = receiver_id
+		self.body = body
 
 def init_site():
 	admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
