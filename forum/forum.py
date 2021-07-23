@@ -40,6 +40,10 @@ def subforum():
 def loginform():
 	return render_template("login.html")
 
+@login_required
+@app.route('/userinfo')
+def userinfo():
+	return render_template("userinfo.html")
 
 @login_required
 @app.route('/addpost')
@@ -157,6 +161,71 @@ def action_createaccount():
 	db.session.commit()
 	login_user(user)
 	return redirect("/")
+
+@login_required
+@app.route('/action_changeusername', methods=['POST'])
+def action_changeusername():
+	
+	id1 = current_user.id
+	new_username = request.form['username']
+	errors = []
+	retry = False
+	if username_taken(new_username):
+		errors.append("Username is already taken!")
+		retry=True
+	if not valid_username(new_username):
+		errors.append("Username is not valid!")
+		retry = True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	
+	db.session.query(User).filter(User.id == id1).update({"username": new_username}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+
+@login_required
+@app.route('/action_changeemail', methods=['POST'])
+def action_changeemail():
+	
+	id1 = current_user.id
+	new_email = request.form['email']
+	errors = []
+	retry = False
+	if email_taken(new_email):
+		errors.append("Email is already taken!")
+		retry=True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	
+	db.session.query(User).filter(User.id == id1).update({"email": new_email}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+
+@login_required
+@app.route('/action_changepassword', methods=['POST'])
+def action_changepassword():
+	
+	id1 = current_user.id
+	'''
+	errors = []
+	retry = False
+	input_current_password = request.form['current_password']
+	unhashed_password = User.query.filter(User.password_hash == id1)
+	input_current_password_hashed = generate_password_hash(input_current_password)
+	if input_current_password_hashed != unhashed_password:
+		errors.append("Incorrect current password!")
+		retry=True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	'''
+	new_password = request.form['new_password']
+	new_password_hash = generate_password_hash(new_password)
+	db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
 
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
