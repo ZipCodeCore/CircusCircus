@@ -521,49 +521,20 @@ class Comment(db.Model):
 		return self.savedresponce
 
 
+# AIDAN WAS HERE
+class DirectMessage(db.Model):
 
-
-
-
-
-		
-'''
-class Comment(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
-	content = db.Column(db.Text)
-	postdate = db.Column(db.DateTime)
-	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+	sender_id = db.Column(db.Integer)
+	receiver_id = db.Column(db.Integer)
+	body = db.Column(db.String(256))  # limit 256 chars in message
 
-	lastcheck = None
-	savedresponce = None
-	def __init__(self, content, postdate):
-		self.content = content
-		self.postdate = postdate
-	def get_time_string(self):
-		#this only needs to be calculated every so often, not for every request
-		#this can be a rudamentary chache
-		now = datetime.datetime.now()
-		if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
-			self.lastcheck = now
-		else:
-			return self.savedresponce
+	def __init__(self, sender_id, receiver_id, body):
+		self.sender_id = sender_id
+		self.receiver_id = receiver_id
+		self.body = body
 
-		diff = now - self.postdate
-		seconds = diff.total_seconds()
-		if seconds / (60 * 60 * 24 * 30) > 1:
-			self.savedresponce =  " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
-		elif seconds / (60 * 60 * 24) > 1:
-			self.savedresponce =  " " + str(int(seconds / (60*  60 * 24))) + " days ago"
-		elif seconds / (60 * 60) > 1:
-			self.savedresponce = " " + str(int(seconds / (60 * 60))) + " hours ago"
-		elif seconds / (60) > 1:
-			self.savedresponce = " " + str(int(seconds / 60)) + " minutes ago"
-		else:
-			self.savedresponce =  "Just a moment ago!"
-		return self.savedresponce
 
-'''
 def init_site():
 	admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
 	add_subforum("Announcements", "View forum announcements here",admin)
