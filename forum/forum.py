@@ -41,6 +41,10 @@ def subforum():
 def loginform():
 	return render_template("login.html")
 
+@login_required
+@app.route('/userinfo')
+def userinfo():
+	return render_template("userinfo.html")
 
 @login_required
 @app.route('/addpost')
@@ -97,6 +101,23 @@ def comment():
 	if not post:
 		return error("That post does not exist!")
 	content = request.form['content']
+
+	# Like button
+	like_counter = 0
+	if request.method == 'POST':
+		if request.form.get('action1') == 'Like':
+			print('hello')
+	
+	
+	# replaces key word with emoji
+	if '*wink*' in content:
+		content = content.replace('*wink*', '\U0001F609')
+	if '*smile*' in content:
+		content = content.replace('*smile*', '\U0001F600')
+	if '*like*' in content:
+		content = content.replace('*like*', '\U0001F44D')
+
+
 	postdate = datetime.datetime.now()
 	comment = Comment(content, postdate)
 	current_user.comments.append(comment)
@@ -115,6 +136,20 @@ def action_post():
 	user = current_user
 	title = request.form['title']
 	content = request.form['content']
+
+	# replaces key word with emoji
+	if '*wink*' in content or '*wink*' in title:
+		content = content.replace('*wink*', '\U0001F609')
+		title = title.replace('*wink*', '\U0001F609')
+	if '*smile*' in content or '*smile*' in title:
+		content = content.replace('*smile*', '\U0001F600')
+		title = title.replace('*smile*', '\U0001F600')
+	if '*like*' in content or '*like*' in title:
+		content = content.replace('*like*', '\U0001F44D')
+		title = title.replace('*like*', '\U0001F44D')
+	
+
+
 	#check for valid posting
 	errors = []
 	retry = False
@@ -183,6 +218,7 @@ def action_createaccount():
 	login_user(user)
 	return redirect("/")
 
+
 # Action to send a message
 @login_required
 @app.route('/action_sendmessage', methods=['POST'])
@@ -204,6 +240,72 @@ def action_sendmessage():
 	db.session.add(new_message)
 	db.session.commit()
 	return render_template('messagesentsuccess.html')
+
+
+@login_required
+@app.route('/action_changeusername', methods=['POST'])
+def action_changeusername():
+	
+	id1 = current_user.id
+	new_username = request.form['username']
+	errors = []
+	retry = False
+	if username_taken(new_username):
+		errors.append("Username is already taken!")
+		retry=True
+	if not valid_username(new_username):
+		errors.append("Username is not valid!")
+		retry = True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	
+	db.session.query(User).filter(User.id == id1).update({"username": new_username}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+
+@login_required
+@app.route('/action_changeemail', methods=['POST'])
+def action_changeemail():
+	
+	id1 = current_user.id
+	new_email = request.form['email']
+	errors = []
+	retry = False
+	if email_taken(new_email):
+		errors.append("Email is already taken!")
+		retry=True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	
+	db.session.query(User).filter(User.id == id1).update({"email": new_email}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+
+@login_required
+@app.route('/action_changepassword', methods=['POST'])
+def action_changepassword():
+	
+	id1 = current_user.id
+	'''
+	errors = []
+	retry = False
+	input_current_password = request.form['current_password']
+	unhashed_password = User.query.filter(User.password_hash == id1)
+	input_current_password_hashed = generate_password_hash(input_current_password)
+	if input_current_password_hashed != unhashed_password:
+		errors.append("Incorrect current password!")
+		retry=True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	'''
+	new_password = request.form['new_password']
+	new_password_hash = generate_password_hash(new_password)
+	db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
 
 
 def error(errormessage):
