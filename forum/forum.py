@@ -80,6 +80,23 @@ def comment():
 	if not post:
 		return error("That post does not exist!")
 	content = request.form['content']
+
+	# Like button
+	like_counter = 0
+	if request.method == 'POST':
+		if request.form.get('action1') == 'Like':
+			print('hello')
+	
+	
+	# replaces key word with emoji
+	if '*wink*' in content:
+		content = content.replace('*wink*', '\U0001F609')
+	if '*smile*' in content:
+		content = content.replace('*smile*', '\U0001F600')
+	if '*like*' in content:
+		content = content.replace('*like*', '\U0001F44D')
+
+
 	postdate = datetime.datetime.now()
 
 	
@@ -114,6 +131,20 @@ def action_post():
 	user = current_user
 	title = request.form['title']
 	content = request.form['content']
+
+	# replaces key word with emoji
+	if '*wink*' in content or '*wink*' in title:
+		content = content.replace('*wink*', '\U0001F609')
+		title = title.replace('*wink*', '\U0001F609')
+	if '*smile*' in content or '*smile*' in title:
+		content = content.replace('*smile*', '\U0001F600')
+		title = title.replace('*smile*', '\U0001F600')
+	if '*like*' in content or '*like*' in title:
+		content = content.replace('*like*', '\U0001F44D')
+		title = title.replace('*like*', '\U0001F44D')
+	
+
+
 	#check for valid posting
 	errors = []
 	retry = False
