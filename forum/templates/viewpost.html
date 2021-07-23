@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block body %}
 {{ path|safe}}
-
+<!--creates the post you're oging to look at -->
 <div class="actualpost">
 	<div class="actualposttitle">
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
@@ -18,8 +18,11 @@
 	</div>
 
 </div>
+<!--this here creates the input box when you click to add a comment-->
 <div class="addcomment" id="addcomment">
-	<form action="/action_comment?post={{ post.id }}" method="POST">
+	<form action="/action_comment?post={{ post.id }}&comment={{comment.id}}" method="POST">
+		<!--form actions is where to send the data when the work is done, so to the Post table, -->
+		<!--requests have different methods, post request (send data) and get request (get data)-->
 		<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
 		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
 	</form>
@@ -38,8 +41,10 @@
 {%if comments%}
 <div class="comments">
 {% for comment in comments %}
-	
-	<div class="comment">
+<!--this goes through comments and displays every comment-->
+<!--this is the display of the comments--> 
+	<div class="comment" id = "{{ comment.id }}" >
+		<div class = "parent_id" id = "{{ comment.parent_id}}"></div>
 		<div class="commentuser">
 			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) - 
 		</div>
@@ -47,18 +52,38 @@
 			{{ comment.content }}
 		</div>
 		
+		
 		<div class="commenttime">
 			{{ comment.get_time_string() }}
 		</div>
+		<div class="addcomment" id="addsubcomment {{comment.id}}">
+			<form action="/action_comment?post={{ post.id }}" method="POST">
+				<!--form actions is where to send the data when the work is done, so to the Post table, -->
+				<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
+				<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
+			</form>
+		</div>
+
+		<input type="button" id="{{comment.id}}" onclick="toggleSub(this.id)" value="Add a comment">
+		
+
 	</div>
+	
+	
+	
 	<br>
 	
 {% endfor %}
 </div>
 {% endif %}
+<!-- this is the functions of the button and what happens when you click on it-->
+<!-- getElementByID returns the element object who's id matches 'addcomment'-->
+<!-- style.display shows if text is bolded out in several ways: bolded, blocked (between two paragraphs), none means there's not formatting-->
+<!--so -->
 <script type="text/javascript">
 function toggle(){
-	var div = document.getElementById("addcomment");
+
+	var div = document.getElementById("addcomment"); 
 	var button = document.getElementById("displayaddcomment")
 	if(div.style.display == "none" || div.style.display.trim() == ""){
 		div.style.display = "inline";
@@ -68,6 +93,19 @@ function toggle(){
 		button.value="Add a comment"
 	}
 	
+}
+function toggleSub(this_id){
+	console.log(this_id)
+	var div = document.getElementById("addsubcomment" + " " + this_id); 
+	var button = document.getElementById("displayaddcomment")
+	if(div.style.display == "none" || div.style.display.trim() == ""){
+		div.style.display = "inline";
+		button.value="Hide";
+	}else{
+		div.style.display = "none";
+		button.value="Add a comment"
+	}
+
 }
 </script>
 

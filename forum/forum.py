@@ -1,3 +1,4 @@
+# kill -9 40614
 from flask import *
 #from flask.ext.login import LoginManager, login_required, current_user, logout_user, login_user
 from flask_login import LoginManager, current_user, login_user, logout_user
@@ -25,7 +26,7 @@ def index():
 
 @app.route('/subforum')
 def subforum():
-	subforum_id = int(request.args.get("sub"))
+	subforum_id = int(request.args.get("sub")) 
 	subforum = Subforum.query.filter(Subforum.id == subforum_id).first()
 	if not subforum:
 		return error("That subforum does not exist!")
@@ -53,31 +54,54 @@ def addpost():
 
 @app.route('/viewpost')
 def viewpost():
-	postid = int(request.args.get("post"))
+	postid = int(request.args.get("post")) # provides dictionary of the post table
 	post = Post.query.filter(Post.id == postid).first()
 	if not post:
 		return error("That post does not exist!")
 	if not post.subforum.path:
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
+	# how you access the database
+
 	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
 
 #ACTIONS
 
 @login_required
 @app.route('/action_comment', methods=['POST', 'GET'])
+# '/action_comment' is how viewpost.html calls comment()
 def comment():
-	post_id = int(request.args.get("post"))
-	post = Post.query.filter(Post.id == post_id).first()
+	post_id = int(request.args.get("post")) # goes to the post table and gets the post_id
+	# .args.get("post") is from html
+	# ?post = {{post.id}}
+	post = Post.query.filter(Post.id == post_id).first() # checks to make sure post id exists and returns the first 
+	# a query is a select statement
+
 	if not post:
 		return error("That post does not exist!")
 	content = request.form['content']
 	postdate = datetime.datetime.now()
+
+	
 	comment = Comment(content, postdate)
+	# this creates an instance of comment
 	current_user.comments.append(comment)
-	post.comments.append(comment)
+	# inserts comment into users table
+	post.comments.append(comment) #go to the post table, go to the comments column, and then add the comment
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
+
+
+# create a route that sets passes a ?id= {{comment.id}} method = 'POST'
+# grab parent comment id with int(request.args.get(comment.id))
+# make sure route name is unique
+# 1) make sure you're getting all data in form 
+# 2) putting data into the database
+
+@login_required
+@app.route('/comment_comment', methods = ['POST', 'GET'])
+def comment_comment():
+	pass
 
 @login_required
 @app.route('/action_post', methods=['POST'])
@@ -106,6 +130,7 @@ def action_post():
 	user.posts.append(post)
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post.id))
+
 
 
 @app.route('/action_login', methods=['POST'])
@@ -275,19 +300,84 @@ class Post(db.Model):
 
 		return self.savedresponce
 
+# a 'Subforum' model is a table, and all the models make up the database
+# a model's attributes are its columns when defined with db.Column
+
+# so below we have the subforum model
+# the order is id, title, description, parent_id
+# id is the primary key
+# title, description are columns
+# parent_id sets subforum.id as the parent key
+# subforums has a r
+
+
 class Subforum(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	title = db.Column(db.Text, unique=True)
 	description = db.Column(db.Text)
 	subforums = db.relationship("Subforum")
 	parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
-	posts = db.relationship("Post", backref="subforum")
+	posts = db.relationship("Post", backref="subforum") # Post's table is going to get a virtual column of subforum
 	path = None
 	hidden = db.Column(db.Boolean, default=False)
 	def __init__(self, title, description):
 		self.title = title
 		self.description = description
 
+
+# order is id, content, postdate, user_id, post_id
+# we set parent_comment_id as the hcild key, id as the parent_key 
+
+class Comment(db.Model):
+	id = db.Column(db.Integer, primary_key=True)              # every comment gets a primary key
+	content = db.Column(db.Text) 							  # body
+	postdate = db.Column(db.DateTime)
+	user_id = db.Column(db.Integer, db.ForeignKey('user.id')) # lower case looks at a table, upper case looks at a class
+	post_id = db.Column(db.Integer, db.ForeignKey("post.id")) # parent article
+	
+	comments = db.relationship("Comment") # relates to 
+	parent_comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), default = None)
+
+	lastcheck = None
+	savedresponce = None
+	def __init__(self, content, postdate):
+		self.content = content
+		self.postdate = postdate
+
+
+
+
+	def get_time_string(self):
+		#this only needs to be calculated every so often, not for every request
+		#this can be a rudamentary chache
+		now = datetime.datetime.now()
+		if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
+			self.lastcheck = now
+		else:
+			return self.savedresponce
+
+		diff = now - self.postdate
+		seconds = diff.total_seconds()
+		if seconds / (60 * 60 * 24 * 30) > 1:
+			self.savedresponce =  " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
+		elif seconds / (60 * 60 * 24) > 1:
+			self.savedresponce =  " " + str(int(seconds / (60*  60 * 24))) + " days ago"
+		elif seconds / (60 * 60) > 1:
+			self.savedresponce = " " + str(int(seconds / (60 * 60))) + " hours ago"
+		elif seconds / (60) > 1:
+			self.savedresponce = " " + str(int(seconds / 60)) + " minutes ago"
+		else:
+			self.savedresponce =  "Just a moment ago!"
+		return self.savedresponce
+
+
+
+
+
+
+
+		
+'''
 class Comment(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	content = db.Column(db.Text)
@@ -323,7 +413,7 @@ class Comment(db.Model):
 			self.savedresponce =  "Just a moment ago!"
 		return self.savedresponce
 
-
+'''
 def init_site():
 	admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
 	add_subforum("Announcements", "View forum announcements here",admin)
@@ -388,7 +478,7 @@ def setup():
 	for value in siteconfig:
 		interpret_site_value(value)
 """
-
+#db.drop_all()
 
 db.create_all()
 if not Subforum.query.all():
