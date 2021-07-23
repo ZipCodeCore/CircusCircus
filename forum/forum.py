@@ -241,7 +241,7 @@ def action_sendmessage():
 	db.session.commit()
 	return render_template('messagesentsuccess.html')
 
-
+#Chuck stuff start
 @login_required
 @app.route('/action_changeusername', methods=['POST'])
 def action_changeusername():
@@ -306,7 +306,7 @@ def action_changepassword():
 	db.session.commit()
 	
 	return redirect('/userinfo')
-
+#chuck stuff end
 
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
