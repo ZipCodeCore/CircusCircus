@@ -20,7 +20,7 @@
 </div>
 <!--this here creates the input box when you click to add a comment-->
 <div class="addcomment" id="addcomment">
-	<form action="/action_comment?post={{ post.id }}&comment={{comment.id}}" method="POST">
+	<form action="/action_comment?post={{ post.id }}}" method="POST">
 		<!--form actions is where to send the data when the work is done, so to the Post table, -->
 		<!--requests have different methods, post request (send data) and get request (get data)-->
 		<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
