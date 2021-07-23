@@ -25,15 +25,9 @@
 		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
 	</form>
 </div>
-<div style="text-align: center;">
-
-
-<form method = "POST" action = "/">
-	<input type = "button" value = "Like" name = "action1">
-</form>
+<div style="text-align: center;">	
 
 	
-
 	{% if current_user.is_authenticated %}
 	<input type="button" id="displayaddcomment" onclick="toggle()" value="Add a comment">
 

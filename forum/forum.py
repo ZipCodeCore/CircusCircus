@@ -13,6 +13,8 @@ import datetime
 from flask_login.login_manager import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import pandas as pd
+
 
 db = SQLAlchemy(app)
 
@@ -73,21 +75,15 @@ def comment():
 		return error("That post does not exist!")
 	content = request.form['content']
 
-	# Like button
-	like_counter = 0
-	if request.method == 'POST':
-		if request.form.get('action1') == 'Like':
-			print('hello')
-	
-	
+
 	# replaces key word with emoji
 	if '*wink*' in content:
 		content = content.replace('*wink*', '\U0001F609')
 	if '*smile*' in content:
 		content = content.replace('*smile*', '\U0001F600')
 	if '*like*' in content:
-		content = content.replace('*like*', '\U0001F44D')
-
+		content = content.replace('*like*', '\U0001F44D')		
+	
 
 	postdate = datetime.datetime.now()
 	comment = Comment(content, postdate)
