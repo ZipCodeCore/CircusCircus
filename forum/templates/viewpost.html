@@ -2,6 +2,7 @@
 {% block body %}
 {{ path|safe}}
 
+
 <div class="actualpost">
 	<div class="actualposttitle">
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
@@ -25,6 +26,11 @@
 	</form>
 </div>
 <div style="text-align: center;">
+
+
+<form method = "POST" action = "/">
+	<input type = "button" value = "Like" name = "action1">
+</form>
 
 	
 
