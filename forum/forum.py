@@ -2,6 +2,7 @@ from flask import *
 #from flask.ext.login import LoginManager, login_required, current_user, logout_user, login_user
 from flask_login import LoginManager, current_user, login_user, logout_user
 import datetime
+import sys
 
 from flask_login.utils import login_required
 from forum.app import app
@@ -65,6 +66,30 @@ def viewpost():
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
 	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+
+# Route to get all private messages for current user
+@login_required
+@app.route('/get_messages_for_user')
+def get_messages_for_user():	
+	messages = DirectMessage.query.filter_by(receiver_id=current_user.id)
+	senders = get_sending_usernames(messages)
+	return render_template('usermessages.html', messages=messages, senders=senders)
+
+@login_required
+@app.route('/createmessage')
+def createmessage():
+	return render_template('createmessage.html')
+
+def get_sending_usernames(msgs):
+	'''
+	Returns a dict of: {key: sender_id, value: sender_username}
+	'''
+	sending_usernames = {}
+	for msg in msgs:
+		user = User.query.filter_by(id=msg.sender_id).first()
+		if msg.sender_id not in sending_usernames:
+			sending_usernames[msg.sender_id] = user.username
+	return sending_usernames
 
 #ACTIONS
 
@@ -193,6 +218,30 @@ def action_createaccount():
 	login_user(user)
 	return redirect("/")
 
+
+# Action to send a message
+@login_required
+@app.route('/action_sendmessage', methods=['POST'])
+def action_sendmessage():
+	errors = []
+	receiver_username = request.form['username']
+	message_body = request.form['message_body']
+	# check is user exists
+	user = User.query.filter_by(username=receiver_username).first()
+	if user is None:
+		errors.append('User does not exist')
+		return render_template('createmessage.html', errors=errors)
+	# check if message is empty
+	if len(message_body) == 0:
+		errors.append('Cannot send empty message')
+		return render_template('createmessage.html', errors=errors)
+	# create new message and commit to database
+	new_message = DirectMessage(current_user.id, user.id, message_body)
+	db.session.add(new_message)
+	db.session.commit()
+	return render_template('messagesentsuccess.html')
+
+
 @login_required
 @app.route('/action_changeusername', methods=['POST'])
 def action_changeusername():
@@ -257,6 +306,7 @@ def action_changepassword():
 	db.session.commit()
 	
 	return redirect('/userinfo')
+
 
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
@@ -423,6 +473,19 @@ class Comment(db.Model):
 			self.savedresponce =  "Just a moment ago!"
 		return self.savedresponce
 
+
+# AIDAN WAS HERE
+class DirectMessage(db.Model):
+
+	id = db.Column(db.Integer, primary_key=True)
+	sender_id = db.Column(db.Integer)
+	receiver_id = db.Column(db.Integer)
+	body = db.Column(db.String(256))  # limit 256 chars in message
+
+	def __init__(self, sender_id, receiver_id, body):
+		self.sender_id = sender_id
+		self.receiver_id = receiver_id
+		self.body = body
 
 def init_site():
 	admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
