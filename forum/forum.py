@@ -1,4 +1,3 @@
-# kill -9 40614
 from flask import *
 #from flask.ext.login import LoginManager, login_required, current_user, logout_user, login_user
 from flask_login import LoginManager, current_user, login_user, logout_user
@@ -6,6 +5,7 @@ import datetime
 import sys
 
 from flask_login.utils import login_required
+from sqlalchemy.sql.elements import Null
 from forum.app import app
 from flask_sqlalchemy import SQLAlchemy
 
@@ -57,6 +57,21 @@ def addpost():
 
 	return render_template("createpost.html", subforum=subforum)
 
+
+#Wes Work Begin
+@login_required
+@app.route('/privatepost')
+def privatepost():
+	subforum_id = int(request.args.get("sub"))
+	subforum = Subforum.query.filter(Subforum.id == subforum_id).first()
+	if not subforum:
+		return error("That subforum does not exist!")
+
+	return render_template("privatepost.html", subforum=subforum)
+#Wes Work End
+
+
+@login_required
 @app.route('/viewpost')
 def viewpost():
 	postid = int(request.args.get("post")) # provides dictionary of the post table
@@ -66,9 +81,17 @@ def viewpost():
 	if not post.subforum.path:
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
+	newdict = {}
+	for comment in comments:
+		if comment.parent_comment_id != None:
+			if comment.parent_comment_id not in newdict:
+				newdict[comment.parent_comment_id] = [comment]
+			else:
+				newdict[comment.parent_comment_id].append(comment)
+
 	# how you access the database
 
-	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments, newdict = newdict)
 
 # Route to get all private messages for current user
 @login_required
@@ -101,8 +124,9 @@ def get_sending_usernames(msgs):
 # '/action_comment' is how viewpost.html calls comment()
 def comment():
 	post_id = int(request.args.get("post")) # goes to the post table and gets the post_id
-	# .args.get("post") is from html
+	# .args.get("post") is from viewpost.html
 	# ?post = {{post.id}}
+
 	post = Post.query.filter(Post.id == post_id).first() # checks to make sure post id exists and returns the first 
 	# a query is a select statement
 
@@ -110,11 +134,6 @@ def comment():
 		return error("That post does not exist!")
 	content = request.form['content']
 
-	# Like button
-	like_counter = 0
-	if request.method == 'POST':
-		if request.form.get('action1') == 'Like':
-			print('hello')
 	
 	
 	# replaces key word with emoji
@@ -124,10 +143,12 @@ def comment():
 		content = content.replace('*smile*', '\U0001F600')
 	if '*like*' in content:
 		content = content.replace('*like*', '\U0001F44D')
+	if '*spooky*' in content:
+		content = content.replace('*spooky*', '\U0001F47B')
 
 
 	postdate = datetime.datetime.now()
-
+	
 	
 	comment = Comment(content, postdate)
 	# this creates an instance of comment
@@ -146,8 +167,48 @@ def comment():
 
 @login_required
 @app.route('/comment_comment', methods = ['POST', 'GET'])
+# '/action_comment' is how viewpost.html calls comment()
 def comment_comment():
-	pass
+	post_id = int(request.args.get("post")) 
+	post = Post.query.filter(Post.id == post_id).first() 
+
+	parent_id = int(request.args.get("parent"))
+	print(parent_id)
+	parent = Comment.query.filter(Comment.id == parent_id).first()
+	if not post:
+		return error("That post does not exist!")
+	content = request.form['content']
+
+	if not parent:
+		return error("This parent comment does not exist!")
+	
+	# Like button
+	like_counter = 0
+	if request.method == 'POST':
+		if request.form.get('action1') == 'Like':
+			print('hello')
+	
+	
+	# replaces key word with emoji
+	if '*wink*' in content:
+		content = content.replace('*wink*', '\U0001F609')
+	if '*smile*' in content:
+		content = content.replace('*smile*', '\U0001F600')
+	if '*like*' in content:
+		content = content.replace('*like*', '\U0001F44D')
+
+
+	postdate = datetime.datetime.now()
+
+	#  content, postdate, user_id, post_id, parent_comment_id = None
+	comment = Comment(content, postdate, current_user.id, post_id, parent_comment_id = parent_id)
+	# this creates an instance of comment
+	#go to the post table, go to the comments column, and then add the comment
+
+
+	db.session.add(comment)
+	db.session.commit()
+	return redirect("/viewpost?post=" + str(post_id))
 
 @login_required
 @app.route('/action_post', methods=['POST'])
@@ -160,6 +221,7 @@ def action_post():
 	user = current_user
 	title = request.form['title']
 	content = request.form['content']
+	private = request.form['private']
 
 	# replaces key word with emoji
 	if '*wink*' in content or '*wink*' in title:
@@ -171,6 +233,9 @@ def action_post():
 	if '*like*' in content or '*like*' in title:
 		content = content.replace('*like*', '\U0001F44D')
 		title = title.replace('*like*', '\U0001F44D')
+	if '*spooky*' in content or '*spooky*' in title:
+		content = content.replace('*spooky*', '\U0001F47B')
+		title = title.replace('*spooky*', '\U0001F47B')
 	
 
 
@@ -185,7 +250,7 @@ def action_post():
 		retry = True
 	if retry:
 		return render_template("createpost.html",subforum=subforum,  errors=errors)
-	post = Post(title, content, datetime.datetime.now())
+	post = Post(title, content,datetime.datetime.now()) #this is where post are set to public or private'''
 	subforum.posts.append(post)
 	user.posts.append(post)
 	db.session.commit()
@@ -416,6 +481,7 @@ class Post(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	subforum_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
 	postdate = db.Column(db.DateTime)
+	privatepost = db.Column(db.Boolean, default=False)
 
 	#cache stuff
 	lastcheck = None
@@ -424,6 +490,7 @@ class Post(db.Model):
 		self.title = title
 		self.content = content
 		self.postdate = postdate
+		#self.privatepost = privatepost
 	def get_time_string(self):
 		#this only needs to be calculated every so often, not for every request
 		#this can be a rudamentary chache
@@ -474,6 +541,21 @@ class Subforum(db.Model):
 		self.title = title
 		self.description = description
 
+#wes work 
+
+'''class Subforum_2(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	title = db.Column(db.Text, unique=True)
+	description = db.Column(db.Text)
+	subforums = db.relationship("Subforum")
+	parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
+	posts = db.relationship("Post", backref="subforum") # Post's table is going to get a virtual column of subforum
+	path = None
+	hidden = db.Column(db.Boolean, default=False)
+	def __init__(self, title, description):
+		self.title = title
+		self.description = description'''
+#wes work end
 
 # order is id, content, postdate, user_id, post_id
 # we set parent_comment_id as the hcild key, id as the parent_key 
@@ -490,9 +572,12 @@ class Comment(db.Model):
 
 	lastcheck = None
 	savedresponce = None
-	def __init__(self, content, postdate):
+	def __init__(self, content, postdate, user_id, post_id, parent_comment_id = None):
 		self.content = content
 		self.postdate = postdate
+		self.user_id = user_id
+		self.post_id = post_id
+		self.parent_comment_id = parent_comment_id
 
 
 
