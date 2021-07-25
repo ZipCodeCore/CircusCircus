@@ -5,6 +5,7 @@ import datetime
 import sys
 
 from flask_login.utils import login_required
+from sqlalchemy.sql.elements import Null
 from forum.app import app
 from flask_sqlalchemy import SQLAlchemy
 
@@ -65,9 +66,17 @@ def viewpost():
 	if not post.subforum.path:
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
+	newdict = {}
+	for comment in comments:
+		if comment.parent_comment_id != None:
+			if comment.parent_comment_id not in newdict:
+				newdict[comment.parent_comment_id] = [comment]
+			else:
+				newdict[comment.parent_comment_id].append(comment)
+
 	# how you access the database
 
-	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments, newdict = newdict)
 
 # Route to get all private messages for current user
 @login_required
@@ -183,6 +192,8 @@ def comment_comment():
 	comment = Comment(content, postdate, current_user.id, post_id, parent_comment_id = parent_id)
 	# this creates an instance of comment
 	#go to the post table, go to the comments column, and then add the comment
+
+
 	db.session.add(comment)
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
