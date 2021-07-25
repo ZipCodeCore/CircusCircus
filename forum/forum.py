@@ -1,7 +1,9 @@
+# kill -9 40614
 from flask import *
 #from flask.ext.login import LoginManager, login_required, current_user, logout_user, login_user
 from flask_login import LoginManager, current_user, login_user, logout_user
 import datetime
+import sys
 
 from flask_login.utils import login_required
 from forum.app import app
@@ -25,7 +27,7 @@ def index():
 
 @app.route('/subforum')
 def subforum():
-	subforum_id = int(request.args.get("sub"))
+	subforum_id = int(request.args.get("sub")) 
 	subforum = Subforum.query.filter(Subforum.id == subforum_id).first()
 	if not subforum:
 		return error("That subforum does not exist!")
@@ -40,6 +42,10 @@ def subforum():
 def loginform():
 	return render_template("login.html")
 
+@login_required
+@app.route('/userinfo')
+def userinfo():
+	return render_template("userinfo.html")
 
 @login_required
 @app.route('/addpost')
@@ -53,27 +59,59 @@ def addpost():
 
 @app.route('/viewpost')
 def viewpost():
-	postid = int(request.args.get("post"))
+	postid = int(request.args.get("post")) # provides dictionary of the post table
 	post = Post.query.filter(Post.id == postid).first()
 	if not post:
 		return error("That post does not exist!")
 	if not post.subforum.path:
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
+	# how you access the database
+
 	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+
+# Route to get all private messages for current user
+@login_required
+@app.route('/get_messages_for_user')
+def get_messages_for_user():	
+	messages = DirectMessage.query.filter_by(receiver_id=current_user.id)
+	senders = get_sending_usernames(messages)
+	return render_template('usermessages.html', messages=messages, senders=senders)
+
+@login_required
+@app.route('/createmessage')
+def createmessage():
+	return render_template('createmessage.html')
+
+def get_sending_usernames(msgs):
+	'''
+	Returns a dict of: {key: sender_id, value: sender_username}
+	'''
+	sending_usernames = {}
+	for msg in msgs:
+		user = User.query.filter_by(id=msg.sender_id).first()
+		if msg.sender_id not in sending_usernames:
+			sending_usernames[msg.sender_id] = user.username
+	return sending_usernames
 
 #ACTIONS
 
 @login_required
 @app.route('/action_comment', methods=['POST', 'GET'])
+# '/action_comment' is how viewpost.html calls comment()
 def comment():
-	post_id = int(request.args.get("post"))
-	post = Post.query.filter(Post.id == post_id).first()
+	post_id = int(request.args.get("post")) # goes to the post table and gets the post_id
+	# .args.get("post") is from html
+	# ?post = {{post.id}}
+	post = Post.query.filter(Post.id == post_id).first() # checks to make sure post id exists and returns the first 
+	# a query is a select statement
+
 	if not post:
 		return error("That post does not exist!")
 	content = request.form['content']
 
-
+	
+	
 	# replaces key word with emoji
 	if '*wink*' in content:
 		content = content.replace('*wink*', '\U0001F609')
@@ -86,11 +124,27 @@ def comment():
 
 
 	postdate = datetime.datetime.now()
+
+	
 	comment = Comment(content, postdate)
+	# this creates an instance of comment
 	current_user.comments.append(comment)
-	post.comments.append(comment)
+	# inserts comment into users table
+	post.comments.append(comment) #go to the post table, go to the comments column, and then add the comment
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
+
+
+# create a route that sets passes a ?id= {{comment.id}} method = 'POST'
+# grab parent comment id with int(request.args.get(comment.id))
+# make sure route name is unique
+# 1) make sure you're getting all data in form 
+# 2) putting data into the database
+
+@login_required
+@app.route('/comment_comment', methods = ['POST', 'GET'])
+def comment_comment():
+	pass
 
 @login_required
 @app.route('/action_post', methods=['POST'])
@@ -136,6 +190,7 @@ def action_post():
 	user.posts.append(post)
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post.id))
+
 
 
 @app.route('/action_login', methods=['POST'])
@@ -187,6 +242,96 @@ def action_createaccount():
 	db.session.commit()
 	login_user(user)
 	return redirect("/")
+
+
+# Action to send a message
+@login_required
+@app.route('/action_sendmessage', methods=['POST'])
+def action_sendmessage():
+	errors = []
+	receiver_username = request.form['username']
+	message_body = request.form['message_body']
+	# check is user exists
+	user = User.query.filter_by(username=receiver_username).first()
+	if user is None:
+		errors.append('User does not exist')
+		return render_template('createmessage.html', errors=errors)
+	# check if message is empty
+	if len(message_body) == 0:
+		errors.append('Cannot send empty message')
+		return render_template('createmessage.html', errors=errors)
+	# create new message and commit to database
+	new_message = DirectMessage(current_user.id, user.id, message_body)
+	db.session.add(new_message)
+	db.session.commit()
+	return render_template('messagesentsuccess.html')
+
+#Chuck stuff start
+@login_required
+@app.route('/action_changeusername', methods=['POST'])
+def action_changeusername():
+	
+	id1 = current_user.id
+	new_username = request.form['username']
+	errors = []
+	retry = False
+	if username_taken(new_username):
+		errors.append("Username is already taken!")
+		retry=True
+	if not valid_username(new_username):
+		errors.append("Username is not valid!")
+		retry = True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	
+	db.session.query(User).filter(User.id == id1).update({"username": new_username}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+
+@login_required
+@app.route('/action_changeemail', methods=['POST'])
+def action_changeemail():
+	
+	id1 = current_user.id
+	new_email = request.form['email']
+	errors = []
+	retry = False
+	if email_taken(new_email):
+		errors.append("Email is already taken!")
+		retry=True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	
+	db.session.query(User).filter(User.id == id1).update({"email": new_email}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+
+@login_required
+@app.route('/action_changepassword', methods=['POST'])
+def action_changepassword():
+	
+	id1 = current_user.id
+	'''
+	errors = []
+	retry = False
+	input_current_password = request.form['current_password']
+	unhashed_password = User.query.filter(User.password_hash == id1)
+	input_current_password_hashed = generate_password_hash(input_current_password)
+	if input_current_password_hashed != unhashed_password:
+		errors.append("Incorrect current password!")
+		retry=True
+	if retry:
+		return render_template("userinfo.html", errors=errors)
+	'''
+	new_password = request.form['new_password']
+	new_password_hash = generate_password_hash(new_password)
+	db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
+	db.session.commit()
+	
+	return redirect('/userinfo')
+#chuck stuff end
 
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
@@ -305,31 +450,53 @@ class Post(db.Model):
 
 		return self.savedresponce
 
+# a 'Subforum' model is a table, and all the models make up the database
+# a model's attributes are its columns when defined with db.Column
+
+# so below we have the subforum model
+# the order is id, title, description, parent_id
+# id is the primary key
+# title, description are columns
+# parent_id sets subforum.id as the parent key
+# subforums has a r
+
+
 class Subforum(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	title = db.Column(db.Text, unique=True)
 	description = db.Column(db.Text)
 	subforums = db.relationship("Subforum")
 	parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
-	posts = db.relationship("Post", backref="subforum")
+	posts = db.relationship("Post", backref="subforum") # Post's table is going to get a virtual column of subforum
 	path = None
 	hidden = db.Column(db.Boolean, default=False)
 	def __init__(self, title, description):
 		self.title = title
 		self.description = description
 
+
+# order is id, content, postdate, user_id, post_id
+# we set parent_comment_id as the hcild key, id as the parent_key 
+
 class Comment(db.Model):
-	id = db.Column(db.Integer, primary_key=True)
-	content = db.Column(db.Text)
+	id = db.Column(db.Integer, primary_key=True)              # every comment gets a primary key
+	content = db.Column(db.Text) 							  # body
 	postdate = db.Column(db.DateTime)
-	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-	post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+	user_id = db.Column(db.Integer, db.ForeignKey('user.id')) # lower case looks at a table, upper case looks at a class
+	post_id = db.Column(db.Integer, db.ForeignKey("post.id")) # parent article
+	
+	comments = db.relationship("Comment") # relates to 
+	parent_comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), default = None)
 
 	lastcheck = None
 	savedresponce = None
 	def __init__(self, content, postdate):
 		self.content = content
 		self.postdate = postdate
+
+
+
+
 	def get_time_string(self):
 		#this only needs to be calculated every so often, not for every request
 		#this can be a rudamentary chache
@@ -352,6 +519,20 @@ class Comment(db.Model):
 		else:
 			self.savedresponce =  "Just a moment ago!"
 		return self.savedresponce
+
+
+# AIDAN WAS HERE
+class DirectMessage(db.Model):
+
+	id = db.Column(db.Integer, primary_key=True)
+	sender_id = db.Column(db.Integer)
+	receiver_id = db.Column(db.Integer)
+	body = db.Column(db.String(256))  # limit 256 chars in message
+
+	def __init__(self, sender_id, receiver_id, body):
+		self.sender_id = sender_id
+		self.receiver_id = receiver_id
+		self.body = body
 
 
 def init_site():
@@ -418,7 +599,7 @@ def setup():
 	for value in siteconfig:
 		interpret_site_value(value)
 """
-
+#db.drop_all()
 
 db.create_all()
 if not Subforum.query.all():
