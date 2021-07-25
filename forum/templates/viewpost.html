@@ -20,19 +20,13 @@
 </div>
 <!--this here creates the input box when you click to add a comment-->
 <div class="addcomment" id="addcomment">
-	<form action="/action_comment?post={{ post.id }}}" method="POST">
+	<form action="/action_comment?post={{ post.id }}" method="POST">
 		<!--form actions is where to send the data when the work is done, so to the Post table, -->
-		<!--requests have different methods, post request (send data) and get request (get data)-->
 		<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
 		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
 	</form>
 </div>
 <div style="text-align: center;">
-
-
-<form method = "POST" action = "/">
-	<input type = "button" value = "Like" name = "action1">
-</form>
 
 	
 
@@ -61,8 +55,8 @@
 		<div class="commenttime">
 			{{ comment.get_time_string() }}
 		</div>
-		<div class="addcomment" id="addsubcomment {{comment.id}}">
-			<form action="/action_comment?post={{ post.id }}" method="POST">
+		<div class="addsubcomment" id="addsubcomment {{ comment.id }}">
+			<form action="/comment_comment?post={{ post.id }}&parent={{ comment.id }}" method="POST">
 				<!--form actions is where to send the data when the work is done, so to the Post table, -->
 				<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
 				<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
