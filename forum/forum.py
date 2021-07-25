@@ -313,22 +313,18 @@ def action_changeemail():
 def action_changepassword():
 	
 	id1 = current_user.id
-	'''
-	errors = []
-	retry = False
 	input_current_password = request.form['current_password']
-	unhashed_password = User.query.filter(User.password_hash == id1)
-	input_current_password_hashed = generate_password_hash(input_current_password)
-	if input_current_password_hashed != unhashed_password:
-		errors.append("Incorrect current password!")
-		retry=True
+	errors = []
+	retry = True
+	if current_user.check_password(input_current_password):
+		new_password = request.form['new_password']
+		new_password_hash = generate_password_hash(new_password)
+		db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
+		db.session.commit()
+		retry = False
 	if retry:
+		errors.append('Incorrect password!')
 		return render_template("userinfo.html", errors=errors)
-	'''
-	new_password = request.form['new_password']
-	new_password_hash = generate_password_hash(new_password)
-	db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
-	db.session.commit()
 	
 	return redirect('/userinfo')
 #chuck stuff end
