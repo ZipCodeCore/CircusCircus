@@ -55,16 +55,20 @@
 		<div class="commenttime">
 			{{ comment.get_time_string() }}
 		</div>
-		<div class="addsubcomment" id="addsubcomment {{ comment.id }}">
+		<div class="addcomment" id="addsubcomment {{ comment.id }}">
 			<form action="/comment_comment?post={{ post.id }}&parent={{ comment.id }}" method="POST">
 				<!--form actions is where to send the data when the work is done, so to the Post table, -->
 				<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
 				<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
 			</form>
 		</div>
-
-		<input type="button" id="{{comment.id}}" onclick="toggleSub(this.id)" value="Add a comment">
-		
+		{% if current_user.is_authenticated %}
+		<input type="button" id= "{{ comment.id }}"  onclick="toggleSub(this.id)" value="Add a comment">
+	
+		{% else %}
+		<a href="/loginform">Login or register to make a comment</a>
+		{% endif %}
+	</div>
 
 	</div>
 	
@@ -96,7 +100,8 @@ function toggle(){
 function toggleSub(this_id){
 	console.log(this_id)
 	var div = document.getElementById("addsubcomment" + " " + this_id); 
-	var button = document.getElementById("displayaddcomment")
+	var button = document.getElementById("displayaddcomment" + " " + this_id)
+	console.log(button)
 	if(div.style.display == "none" || div.style.display.trim() == ""){
 		div.style.display = "inline";
 		button.value="Hide";
