@@ -27,7 +27,41 @@
 </div>
 <div style="text-align: center;">	
 
+
+	<head>
+		<meta charset = "UTF-8">
+		<title></title>
+		<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+	</head>
+	<body>
+		<input type = "button" class = "btn btn-danger" id = "love" onclick = "loveCounter()" value = "&#10084"> <p id="loveTotal">0</p>
+		<input type = "button" class = "btn btn-default" id = "dislike" onclick = "dislikeCounter()" value = "&#128169">  <p id="dislikeTotal">0</p>
+		
+		<script>
+		
+		var counter1 = 0;
+		var counter2 = 0;
+		
+
+		function loveCounter(){
+			var add1 = (function () {
+				return counter1 += 1;
+			})
+			document.getElementById("loveTotal").innerHTML = add1();
+		}
+
+		function dislikeCounter() {
+			var add2 = (function (){
+				return counter2 += 1;
+			})
+			document.getElementById("dislikeTotal").innerHTML = add2();
+		}
+
+		</script>
+	</body>
 	
+
+
 	{% if current_user.is_authenticated %}
 	<input type="button" id="displayaddcomment" onclick="toggle()" value="Add a comment">
 

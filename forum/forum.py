@@ -13,8 +13,6 @@ import datetime
 from flask_login.login_manager import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import pandas as pd
-
 
 db = SQLAlchemy(app)
 
@@ -63,6 +61,9 @@ def viewpost():
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
 	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+	
+def button_counter():
+	print("hello")
 
 #ACTIONS
 
@@ -82,8 +83,10 @@ def comment():
 	if '*smile*' in content:
 		content = content.replace('*smile*', '\U0001F600')
 	if '*like*' in content:
-		content = content.replace('*like*', '\U0001F44D')		
-	
+		content = content.replace('*like*', '\U0001F44D')
+	if '*spooky*' in content:
+		content = content.replace('*spooky*', '\U0001F47B')
+
 
 	postdate = datetime.datetime.now()
 	comment = Comment(content, postdate)
@@ -114,6 +117,9 @@ def action_post():
 	if '*like*' in content or '*like*' in title:
 		content = content.replace('*like*', '\U0001F44D')
 		title = title.replace('*like*', '\U0001F44D')
+	if '*spooky*' in content or '*spooky*' in title:
+		content = content.replace('*spooky*', '\U0001F47B')
+		title = title.replace('*spooky*', '\U0001F47B')
 	
 
 
