@@ -119,11 +119,6 @@ def comment():
 		return error("That post does not exist!")
 	content = request.form['content']
 
-	# Like button
-	like_counter = 0
-	if request.method == 'POST':
-		if request.form.get('action1') == 'Like':
-			print('hello')
 	
 	
 	# replaces key word with emoji
@@ -133,6 +128,8 @@ def comment():
 		content = content.replace('*smile*', '\U0001F600')
 	if '*like*' in content:
 		content = content.replace('*like*', '\U0001F44D')
+	if '*spooky*' in content:
+		content = content.replace('*spooky*', '\U0001F47B')
 
 
 	postdate = datetime.datetime.now()
@@ -220,6 +217,9 @@ def action_post():
 	if '*like*' in content or '*like*' in title:
 		content = content.replace('*like*', '\U0001F44D')
 		title = title.replace('*like*', '\U0001F44D')
+	if '*spooky*' in content or '*spooky*' in title:
+		content = content.replace('*spooky*', '\U0001F47B')
+		title = title.replace('*spooky*', '\U0001F47B')
 	
 
 
