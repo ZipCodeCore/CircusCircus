@@ -1,16 +1,21 @@
+
 {% extends 'layout.html' %}
 {% block body %}
 {{ path|safe}}
 <!--creates the post you're oging to look at -->
 <div class="actualpost">
 	<div class="actualposttitle">
+		{% if current_user.is_authenticated %}
+		{% else %}
+	<a href="/loginform">Login to view private post</a>
+	{% endif %}
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
 		<div class="postposter" {% if post.user.admin %} style="color: red;" {% endif %}>
-			{{ post.user.username }}
+			{{ post.user.username}}
 
 		</div>
 		<div class="posttime">
-			{{ post.get_time_string() }}
+		{{ post.get_time_string() }}
 		</div>
 	</div>
 	<div class="postcontent">
