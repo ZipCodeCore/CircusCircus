@@ -61,9 +61,6 @@ def viewpost():
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
 	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
-	
-def button_counter():
-	print("hello")
 
 #ACTIONS
 
