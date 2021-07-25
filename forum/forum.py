@@ -57,6 +57,21 @@ def addpost():
 
 	return render_template("createpost.html", subforum=subforum)
 
+
+#Wes Work Begin
+@login_required
+@app.route('/privatepost')
+def privatepost():
+	subforum_id = int(request.args.get("sub"))
+	subforum = Subforum.query.filter(Subforum.id == subforum_id).first()
+	if not subforum:
+		return error("That subforum does not exist!")
+
+	return render_template("privatepost.html", subforum=subforum)
+#Wes Work End
+
+
+@login_required
 @app.route('/viewpost')
 def viewpost():
 	postid = int(request.args.get("post")) # provides dictionary of the post table
@@ -160,6 +175,7 @@ def action_post():
 	user = current_user
 	title = request.form['title']
 	content = request.form['content']
+	private = request.form['private']
 
 	# replaces key word with emoji
 	if '*wink*' in content or '*wink*' in title:
@@ -185,7 +201,7 @@ def action_post():
 		retry = True
 	if retry:
 		return render_template("createpost.html",subforum=subforum,  errors=errors)
-	post = Post(title, content, datetime.datetime.now())
+	post = Post(title, content,datetime.datetime.now()) #this is where post are set to public or private'''
 	subforum.posts.append(post)
 	user.posts.append(post)
 	db.session.commit()
@@ -416,6 +432,7 @@ class Post(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	subforum_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
 	postdate = db.Column(db.DateTime)
+	privatepost = db.Column(db.Boolean, default=False)
 
 	#cache stuff
 	lastcheck = None
@@ -424,6 +441,7 @@ class Post(db.Model):
 		self.title = title
 		self.content = content
 		self.postdate = postdate
+		#self.privatepost = privatepost
 	def get_time_string(self):
 		#this only needs to be calculated every so often, not for every request
 		#this can be a rudamentary chache
@@ -474,6 +492,21 @@ class Subforum(db.Model):
 		self.title = title
 		self.description = description
 
+#wes work 
+
+'''class Subforum_2(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	title = db.Column(db.Text, unique=True)
+	description = db.Column(db.Text)
+	subforums = db.relationship("Subforum")
+	parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
+	posts = db.relationship("Post", backref="subforum") # Post's table is going to get a virtual column of subforum
+	path = None
+	hidden = db.Column(db.Boolean, default=False)
+	def __init__(self, title, description):
+		self.title = title
+		self.description = description'''
+#wes work end
 
 # order is id, content, postdate, user_id, post_id
 # we set parent_comment_id as the hcild key, id as the parent_key 
