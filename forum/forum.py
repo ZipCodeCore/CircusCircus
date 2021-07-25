@@ -1,4 +1,3 @@
-# kill -9 40614
 from flask import *
 #from flask.ext.login import LoginManager, login_required, current_user, logout_user, login_user
 from flask_login import LoginManager, current_user, login_user, logout_user
@@ -6,6 +5,7 @@ import datetime
 import sys
 
 from flask_login.utils import login_required
+from sqlalchemy.sql.elements import Null
 from forum.app import app
 from flask_sqlalchemy import SQLAlchemy
 
@@ -66,9 +66,17 @@ def viewpost():
 	if not post.subforum.path:
 		subforum.path = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
+	newdict = {}
+	for comment in comments:
+		if comment.parent_comment_id != None:
+			if comment.parent_comment_id not in newdict:
+				newdict[comment.parent_comment_id] = [comment]
+			else:
+				newdict[comment.parent_comment_id].append(comment)
+
 	# how you access the database
 
-	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments)
+	return render_template("viewpost.html", post=post, path=subforum.path, comments=comments, newdict = newdict)
 
 # Route to get all private messages for current user
 @login_required
@@ -101,8 +109,9 @@ def get_sending_usernames(msgs):
 # '/action_comment' is how viewpost.html calls comment()
 def comment():
 	post_id = int(request.args.get("post")) # goes to the post table and gets the post_id
-	# .args.get("post") is from html
+	# .args.get("post") is from viewpost.html
 	# ?post = {{post.id}}
+
 	post = Post.query.filter(Post.id == post_id).first() # checks to make sure post id exists and returns the first 
 	# a query is a select statement
 
@@ -127,7 +136,7 @@ def comment():
 
 
 	postdate = datetime.datetime.now()
-
+	
 	
 	comment = Comment(content, postdate)
 	# this creates an instance of comment
@@ -146,8 +155,48 @@ def comment():
 
 @login_required
 @app.route('/comment_comment', methods = ['POST', 'GET'])
+# '/action_comment' is how viewpost.html calls comment()
 def comment_comment():
-	pass
+	post_id = int(request.args.get("post")) 
+	post = Post.query.filter(Post.id == post_id).first() 
+
+	parent_id = int(request.args.get("parent"))
+	print(parent_id)
+	parent = Comment.query.filter(Comment.id == parent_id).first()
+	if not post:
+		return error("That post does not exist!")
+	content = request.form['content']
+
+	if not parent:
+		return error("This parent comment does not exist!")
+	
+	# Like button
+	like_counter = 0
+	if request.method == 'POST':
+		if request.form.get('action1') == 'Like':
+			print('hello')
+	
+	
+	# replaces key word with emoji
+	if '*wink*' in content:
+		content = content.replace('*wink*', '\U0001F609')
+	if '*smile*' in content:
+		content = content.replace('*smile*', '\U0001F600')
+	if '*like*' in content:
+		content = content.replace('*like*', '\U0001F44D')
+
+
+	postdate = datetime.datetime.now()
+
+	#  content, postdate, user_id, post_id, parent_comment_id = None
+	comment = Comment(content, postdate, current_user.id, post_id, parent_comment_id = parent_id)
+	# this creates an instance of comment
+	#go to the post table, go to the comments column, and then add the comment
+
+
+	db.session.add(comment)
+	db.session.commit()
+	return redirect("/viewpost?post=" + str(post_id))
 
 @login_required
 @app.route('/action_post', methods=['POST'])
@@ -313,18 +362,22 @@ def action_changeemail():
 def action_changepassword():
 	
 	id1 = current_user.id
-	input_current_password = request.form['current_password']
+	'''
 	errors = []
-	retry = True
-	if current_user.check_password(input_current_password):
-		new_password = request.form['new_password']
-		new_password_hash = generate_password_hash(new_password)
-		db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
-		db.session.commit()
-		retry = False
+	retry = False
+	input_current_password = request.form['current_password']
+	unhashed_password = User.query.filter(User.password_hash == id1)
+	input_current_password_hashed = generate_password_hash(input_current_password)
+	if input_current_password_hashed != unhashed_password:
+		errors.append("Incorrect current password!")
+		retry=True
 	if retry:
-		errors.append('Incorrect password!')
 		return render_template("userinfo.html", errors=errors)
+	'''
+	new_password = request.form['new_password']
+	new_password_hash = generate_password_hash(new_password)
+	db.session.query(User).filter(User.id == id1).update({"password_hash": new_password_hash}, synchronize_session="fetch")
+	db.session.commit()
 	
 	return redirect('/userinfo')
 #chuck stuff end
@@ -486,9 +539,12 @@ class Comment(db.Model):
 
 	lastcheck = None
 	savedresponce = None
-	def __init__(self, content, postdate):
+	def __init__(self, content, postdate, user_id, post_id, parent_comment_id = None):
 		self.content = content
 		self.postdate = postdate
+		self.user_id = user_id
+		self.post_id = post_id
+		self.parent_comment_id = parent_comment_id
 
 
 
