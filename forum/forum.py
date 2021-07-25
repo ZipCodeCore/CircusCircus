@@ -148,13 +148,9 @@ def comment():
 
 
 	postdate = datetime.datetime.now()
-	
-	
-	comment = Comment(content, postdate)
+	comment = Comment(content, postdate, current_user.id, post_id)
 	# this creates an instance of comment
-	current_user.comments.append(comment)
-	# inserts comment into users table
-	post.comments.append(comment) #go to the post table, go to the comments column, and then add the comment
+	db.session.add(comment)
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
 
@@ -204,7 +200,6 @@ def comment_comment():
 	comment = Comment(content, postdate, current_user.id, post_id, parent_comment_id = parent_id)
 	# this creates an instance of comment
 	#go to the post table, go to the comments column, and then add the comment
-
 
 	db.session.add(comment)
 	db.session.commit()
