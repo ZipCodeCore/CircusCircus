@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+
+<div class="userbox">
+	<h3>Schooner Account</h3>
+	Username: {{current_user.username}} 
+	<form action="/action_changeusername" method="POST">
+	<input class="loginelement" type="text" placeholder="New Username" name="username"><br>
+	<input class="loginelement" type="submit" value="Change Username">
+	</form>
+	<br>
+	Email: {{current_user.email}} 
+	<form action="/action_changeemail" method="POST">
+	<input class="loginelement" type="email" placeholder="New Email" name="email"><br>
+	<input class="loginelement" type="submit" value="Change Email">
+	</form>
+	<br>
+	Password:
+	<form action="/action_changepassword" method="POST">
+	<input class="loginelement" type="password" placeholder="Current Password" name="current_password"><br>
+	<input class="loginelement" type="password" placeholder="New Password" name="new_password"><br>
+	<input class="loginelement" type="submit" value="Change Password">
+	</form>
+</div>
+<br><br>
+
+
+
+{% endblock %}

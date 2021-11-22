@@ -1,16 +1,21 @@
+
 {% extends 'layout.html' %}
 {% block body %}
 {{ path|safe}}
-
+<!--creates the post you're oging to look at -->
 <div class="actualpost">
 	<div class="actualposttitle">
+		{% if current_user.is_authenticated %}
+		{% else %}
+	<a href="/loginform">Login to view private post</a>
+	{% endif %}
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
 		<div class="postposter" {% if post.user.admin %} style="color: red;" {% endif %}>
-			{{ post.user.username }}
+			{{ post.user.username}}
 
 		</div>
 		<div class="posttime">
-			{{ post.get_time_string() }}
+		{{ post.get_time_string() }}
 		</div>
 	</div>
 	<div class="postcontent">
@@ -18,16 +23,50 @@
 	</div>
 
 </div>
+<!--this here creates the input box when you click to add a comment-->
 <div class="addcomment" id="addcomment">
 	<form action="/action_comment?post={{ post.id }}" method="POST">
+		<!--form actions is where to send the data when the work is done, so to the Post table, -->
 		<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
 		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
 	</form>
 </div>
-<div style="text-align: center;">
+
+<!--add react buttons on posts-->
+<div style="text-align: center;">	
+	<head>
+		<meta charset = "UTF-8">
+		<title></title>
+		<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+	</head>
+	<body>
+		<input type = "button" class = "btn btn-danger" id = "love" onclick = "loveCounter()" value = "&#10084"> <p id="loveTotal">0</p>
+		<input type = "button" class = "btn btn-default" id = "dislike" onclick = "dislikeCounter()" value = "&#128169">  <p id="dislikeTotal">0</p>
+		
+		<script>
+		
+		var counter1 = 0;
+		var counter2 = 0;
+		
+
+		function loveCounter(){
+			var add1 = (function () {
+				return counter1 += 1;
+			})
+			document.getElementById("loveTotal").innerHTML = add1();
+		}
+
+		function dislikeCounter() {
+			var add2 = (function (){
+				return counter2 += 1;
+			})
+			document.getElementById("dislikeTotal").innerHTML = add2();
+		}
+
+		</script>
+	</body>
 
 	
-
 	{% if current_user.is_authenticated %}
 	<input type="button" id="displayaddcomment" onclick="toggle()" value="Add a comment">
 
@@ -38,27 +77,103 @@
 {%if comments%}
 <div class="comments">
 {% for comment in comments %}
-	
-	<div class="comment">
+	{% if comment.id in newdict %}
+	<div class="comment" id = "{{ comment.id }}" >
+		<div class = "parent_id" id = "{{ comment.parent_comment_id}}"></div>
 		<div class="commentuser">
 			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) - 
 		</div>
 		<div class="commentcontent">
+	
+			
 			{{ comment.content }}
 		</div>
+		
 		
 		<div class="commenttime">
 			{{ comment.get_time_string() }}
 		</div>
-	</div>
-	<br>
+		<div class="addcomment" id="addsubcomment {{ comment.id }}">
+			<form action="/comment_comment?post={{ post.id }}&parent={{ comment.id }}" method="POST">
+				<!--form actions is where to send the data when the work is done, so to the Post table, -->
+				<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
+				<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
+			</form>
+		</div>
+		{% if current_user.is_authenticated %}
+		<input type="button" id= "{{ comment.id }}"  onclick="toggleSub(this.id)" value="Add a comment">
 	
+		{% else %}
+		<a href="/loginform">Login or register to make a comment</a>
+		{% endif %}
+	</div>
+
+		{% for subcomment in newdict[comment.id] %}
+<!--this goes through comments and displays every comment-->
+<!--this is the display of the comments--> 
+	<div class="comment" id = "{{ subcomment.id }}" >
+		<div class = "parent_id" id = "{{ subcomment.parent_comment_id}}"></div>
+		<div class="commentuser">
+			(<span  {% if subcomment.user.admin %} style="color: red;" {% endif %}>{{ subcomment.user.username }}</span>) - 
+		</div>
+		<div class="commentcontent">
+	
+			
+			{{ subcomment.content }}
+		</div>
+		
+		<div class="commenttime">
+			{{ subcomment.get_time_string() }}
+		</div>
+	</div>	
+		{% endfor %}
+	{% else %}
+	{% if comment.parent_comment_id is none %}
+	<div class="comment" id = "{{ comment.id }}" >
+		<div class = "parent_id" id = "{{ comment.parent_comment_id}}"></div>
+		<div class="commentuser">
+			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) - 
+		</div>
+		<div class="commentcontent">
+	
+			
+			{{ comment.content }}
+		</div>
+		
+		
+		<div class="commenttime">
+			{{ comment.get_time_string() }}
+		</div>
+		<div class="addcomment" id="addsubcomment {{ comment.id }}">
+			<form action="/comment_comment?post={{ post.id }}&parent={{ comment.id }}" method="POST">
+				<!--form actions is where to send the data when the work is done, so to the Post table, -->
+				<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
+				<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
+			</form>
+		</div>
+		{% if current_user.is_authenticated %}
+		<input type="button" id= "{{ comment.id }}"  onclick="toggleSub(this.id)" value="Add a comment">
+	
+		{% else %}
+		<a href="/loginform">Login or register to make a comment</a>
+		{% endif %}
+	</div>
+	{% endif %}
+	{% endif %}
+	
+	<br>
 {% endfor %}
+
 </div>
 {% endif %}
+<!-- this is the functions of the button and what happens when you click on it-->
+<!-- getElementByID returns the element object who's id matches 'addcomment'-->
+<!-- style.display shows if text is bolded out in several ways: bolded, blocked (between two paragraphs), none means there's not formatting-->
+<!--so -->
 <script type="text/javascript">
 function toggle(){
-	var div = document.getElementById("addcomment");
+
+	var div = document.getElementById("addcomment"); 
 	var button = document.getElementById("displayaddcomment")
 	if(div.style.display == "none" || div.style.display.trim() == ""){
 		div.style.display = "inline";
@@ -68,6 +183,20 @@ function toggle(){
 		button.value="Add a comment"
 	}
 	
+}
+function toggleSub(this_id){
+	console.log(this_id)
+	var div = document.getElementById("addsubcomment" + " " + this_id); 
+	var button = document.getElementById("displayaddcomment" + " " + this_id)
+	console.log(button)
+	if(div.style.display == "none" || div.style.display.trim() == ""){
+		div.style.display = "inline";
+		button.value="Hide";
+	}else{
+		div.style.display = "none";
+		button.value="Add a comment"
+	}
+
 }
 </script>
 
