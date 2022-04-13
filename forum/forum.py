@@ -18,6 +18,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 if os.getenv("DATABASE_URL"):
 	app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+	print("setting db url")
 else:
 	print("DATABASE_URL is not set, using sqlite")
 
