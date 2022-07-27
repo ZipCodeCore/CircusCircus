@@ -24,6 +24,7 @@ else:
 
 db = SQLAlchemy(app)
 
+kris = "foo"
 #VIEWS
 
 @app.route('/')
