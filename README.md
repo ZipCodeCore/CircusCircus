@@ -3,8 +3,17 @@ This is a minimal forum written in python with Flask. It supports only the bare 
 
 On first run, the default subforums will be created. Although custom subforums are not supported through any user interface, it is possible to modify forum/setup.py to create custom subforums.
 
+## Create a Github Organization
+
+- create an org
+- make all group members collaborators
+- clone/branch from group's org's repo.
+- maintain two branches,`main` & `dev` (plus a different branch for each group member)
+
 ## Features to Add
 
+- divide `forum.py` into multiple modules (eg. `posts`, `comments`, `auth (login etc)`)
+- migrate from sqlite3 to MySQL
 - comments on each post (many comments to one post)
 - like/dislike/heart/etc emojis on posts
 - direct messages from one user to another
