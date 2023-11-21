@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -21,3 +22,7 @@ db = SQLAlchemy(app)
 
 def error(errormessage):
 	return "<b style=\"color: red;\">" + errormessage + "</b>"
+
+
+login_manager = LoginManager()
+login_manager.init_app(app)

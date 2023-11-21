@@ -2,55 +2,56 @@ import datetime
 from flask import *
 from flask_login import login_required, current_user
 
+from forum.app import db, error
 from forum.comment import Comment
-from forum.subforum import Subforum, generateLinkPath
-from forum.forum import db, app, valid_title, valid_content
-from forum.app import error
+from forum.forum import Subforum, subforum, generateLinkPath
+from forum.user import valid_title, valid_content
+from forum.model import *
 
 
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text)
-    content = db.Column(db.Text)
-    comments = db.relationship("Comment", backref="post")
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    subforum_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
-    postdate = db.Column(db.DateTime)
-
-    # cache stuff
-    lastcheck = None
-    savedresponce = None
-
-    def __init__(self, title, content, postdate):
-        self.title = title
-        self.content = content
-        self.postdate = postdate
-
-    def get_time_string(self):
-        # this only needs to be calculated every so often, not for every request
-        # this can be a rudamentary chache
-        now = datetime.datetime.now()
-        if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
-            self.lastcheck = now
-        else:
-            return self.savedresponce
-
-        diff = now - self.postdate
-
-        seconds = diff.total_seconds()
-        print(seconds)
-        if seconds / (60 * 60 * 24 * 30) > 1:
-            self.savedresponce = " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
-        elif seconds / (60 * 60 * 24) > 1:
-            self.savedresponce = " " + str(int(seconds / (60 * 60 * 24))) + " days ago"
-        elif seconds / (60 * 60) > 1:
-            self.savedresponce = " " + str(int(seconds / (60 * 60))) + " hours ago"
-        elif seconds / (60) > 1:
-            self.savedresponce = " " + str(int(seconds / 60)) + " minutes ago"
-        else:
-            self.savedresponce = "Just a moment ago!"
-
-        return self.savedresponce
+# class Post(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.Text)
+#     content = db.Column(db.Text)
+#     comments = db.relationship("Comment", backref="post")
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     subforum_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
+#     postdate = db.Column(db.DateTime)
+#
+#     # cache stuff
+#     lastcheck = None
+#     savedresponce = None
+#
+#     def __init__(self, title, content, postdate):
+#         self.title = title
+#         self.content = content
+#         self.postdate = postdate
+#
+#     def get_time_string(self):
+#         # this only needs to be calculated every so often, not for every request
+#         # this can be a rudamentary chache
+#         now = datetime.datetime.now()
+#         if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
+#             self.lastcheck = now
+#         else:
+#             return self.savedresponce
+#
+#         diff = now - self.postdate
+#
+#         seconds = diff.total_seconds()
+#         print(seconds)
+#         if seconds / (60 * 60 * 24 * 30) > 1:
+#             self.savedresponce = " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
+#         elif seconds / (60 * 60 * 24) > 1:
+#             self.savedresponce = " " + str(int(seconds / (60 * 60 * 24))) + " days ago"
+#         elif seconds / (60 * 60) > 1:
+#             self.savedresponce = " " + str(int(seconds / (60 * 60))) + " hours ago"
+#         elif seconds / (60) > 1:
+#             self.savedresponce = " " + str(int(seconds / 60)) + " minutes ago"
+#         else:
+#             self.savedresponce = "Just a moment ago!"
+#
+#         return self.savedresponce
 
 
 @login_required
@@ -104,3 +105,21 @@ def action_post():
     user.posts.append(post)
     db.session.commit()
     return redirect("/viewpost?post=" + str(post.id))
+
+@login_required
+@app.route('/action_comment', methods=['POST', 'GET'])
+def comment():
+
+    post_id = int(request.args.get("post"))
+    post = Post.query.filter(Post.id == post_id).first()
+    if not post:
+        return error("That post does not exist!")
+    content = request.form['content']
+    postdate = datetime.datetime.now()
+    comment = Comment(content, postdate)
+    current_user.comments.append(comment)
+    post.comments.append(comment)
+    db.session.commit()
+    return redirect("/viewpost?post=" + str(post_id))
+
+
