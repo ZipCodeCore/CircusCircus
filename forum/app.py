@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config.update(
@@ -8,3 +9,15 @@ app.config.update(
 	SITE_DESCRIPTION = "a schooner forum",
 	SQLALCHEMY_DATABASE_URI='sqlite:////tmp/database.db'
 )
+
+import os
+if os.getenv("DATABASE_URL"):
+	app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+	print("setting db url for postgres")
+else:
+	print("DATABASE_URL is not set, using sqlite")
+
+db = SQLAlchemy(app)
+
+def error(errormessage):
+	return "<b style=\"color: red;\">" + errormessage + "</b>"
