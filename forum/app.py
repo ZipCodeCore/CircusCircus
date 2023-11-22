@@ -43,7 +43,7 @@ def load_user(userid):
 	return User.query.get(userid)
 
 with app.app_context():
-	db.create_all()
+	db.create_all() # TODO this may be redundant
 	if not Subforum.query.all():
 		init_site()
 
