@@ -1,21 +1,14 @@
-import datetime
 
-from flask import Flask, render_template
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, current_user, login_user, logout_user
-from forum.models import *
-from forum.user import *
+from flask import render_template
+from flask_login import LoginManager
+from forum.models import Subforum, db, User
+
 from . import create_app
-
-
 app = create_app()
 
-app.config[''] = True
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///circuscircus.db'
 app.config['SITE_NAME'] = 'Schooner'
 app.config['SITE_DESCRIPTION'] = 'a schooner forum'
 app.config['FLASK_DEBUG'] = 1
-
 
 def init_site():
 	print("creating initial subforums")
@@ -50,12 +43,10 @@ def load_user(userid):
 	return User.query.get(userid)
 
 with app.app_context():
-	load_db()
 	db.create_all()
 	if not Subforum.query.all():
 		init_site()
 
- 
 @app.route('/')
 def index():
 	subforums = Subforum.query.filter(Subforum.parent_id == None).order_by(Subforum.id)

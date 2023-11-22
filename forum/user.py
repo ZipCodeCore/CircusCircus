@@ -1,12 +1,11 @@
 
-from flask import render_template, request, redirect, url_for
-from flask_login import LoginManager, current_user, login_user, logout_user
-from flask_login.utils import login_required
-from flask_login import current_user
-
 from .models import User
 
 import re
+
+##
+# Some utility routines.
+##
 
 password_regex = re.compile("^[a-zA-Z0-9!@#%&]{6,40}$")
 username_regex = re.compile("^[a-zA-Z0-9!@#%&]{4,40}$")

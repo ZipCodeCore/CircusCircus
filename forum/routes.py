@@ -1,16 +1,16 @@
 from flask import render_template, request, redirect, url_for
-from flask_login import LoginManager, current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user
 from flask_login.utils import login_required
 import datetime
-
 from flask import Blueprint, render_template, request, redirect, url_for
-
 from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error
+from forum.user import username_taken, email_taken, valid_username
 
-from forum.user import username_taken, email_taken, valid_password, valid_username
-rt = Blueprint('routes', __name__,
-                        template_folder='templates')
+##
+# This file needs to be broken up into several, to make the project easier to work on.
+##
 
+rt = Blueprint('routes', __name__, template_folder='templates')
 
 @rt.route('/action_login', methods=['POST'])
 def action_login():
@@ -101,8 +101,6 @@ def viewpost():
 		subforumpath = generateLinkPath(post.subforum.id)
 	comments = Comment.query.filter(Comment.post_id == postid).order_by(Comment.id.desc()) # no need for scalability now
 	return render_template("viewpost.html", post=post, path=subforumpath, comments=comments)
-
-#ACTIONS
 
 @login_required
 @rt.route('/action_comment', methods=['POST', 'GET'])

@@ -35,7 +35,7 @@ But now, if I have it right, you need to clone this and then
 This currently puts a sqlite3 db in the /tmp directory.
 
 ```
-$ python3.9 -m venv venv
+$ python3 -m venv venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
 $ ./run.sh
@@ -44,3 +44,11 @@ $ ./run.sh
 and it should appear on port 5000
 
 `http://0.0.0.0:5000`
+
+## Changes in 2023
+
+database is now in `instance/` directory
+removed version labels from `requirements.txt`
+
+The Heroku file is broken.
+The Procfile is broken too.
