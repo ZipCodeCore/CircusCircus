@@ -118,3 +118,17 @@ class Subforum(db.Model):
         self.title = title
         self.description = description
 
+
+def generateLinkPath(subforumid):
+    links = []
+    subforum = Subforum.query.filter(Subforum.id == subforumid).first()
+    parent = Subforum.query.filter(Subforum.id == subforum.parent_id).first()
+    links.append("<a href=\"/subforum?sub=" + str(subforum.id) + "\">" + subforum.title + "</a>")
+    while parent is not None:
+        links.append("<a href=\"/subforum?sub=" + str(parent.id) + "\">" + parent.title + "</a>")
+        parent = Subforum.query.filter(Subforum.id == parent.parent_id).first()
+    links.append("<a href=\"/\">Forum Index</a>")
+    link = ""
+    for l in reversed(links):
+        link = link + " / " + l
+    return link
