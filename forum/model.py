@@ -1,9 +1,9 @@
 import datetime
 
-from forum.app import db
-from flask_login import UserMixin, login_manager, login_user, login_required, logout_user
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from forum.app import db
 
 
 class Post(db.Model):
@@ -50,6 +50,7 @@ class Post(db.Model):
 
         return self.savedresponce
 
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
@@ -86,6 +87,7 @@ class Comment(db.Model):
         else:
             self.savedresponce = "Just a moment ago!"
         return self.savedresponce
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
