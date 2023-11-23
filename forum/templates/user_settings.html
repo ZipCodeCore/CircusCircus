@@ -10,5 +10,14 @@
 	</form>
 </div>
 
+<div class="loginbox">
+	<h3>Change Email</h3>
+	<label class="loginelement"><b>Current Email: </b>{{ current_user.email }}</label>
+	<form action="/action_change_email" method="POST">
+	<input class="loginelement" type="text" placeholder="New email" name="new_email"><br>
+	<input class="loginelement" type="submit" value="Update">
+	</form>
+</div>
+
 
 {% endblock %}
