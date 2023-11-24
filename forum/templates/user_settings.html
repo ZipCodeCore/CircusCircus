@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+<div class="loginbox">
+	<h3>Change Username</h3>
+	<label class="loginelement"><b>UserName</b></label>
+	<form action="/user_settings/action_change_username" method="POST">
+	<input class="loginelement" type="text" placeholder="new_username" name="new_username"><br>
+	<input class="loginelement" type="submit" value="Update">
+	</form>
+</div>
+<br><br>
+<div class="loginbox">
+	<h3>Change Email</h3>
+	<label class="loginelement"><b>Email</b></label>
+	<form action="/user_settings/action_change_email" method="POST">
+	<input class="loginelement" type="text" placeholder="new_email" name="new_email"><br>
+	<input class="loginelement" type="submit" value="Update">
+	</form>
+</div>
+
+
+{% endblock %}
