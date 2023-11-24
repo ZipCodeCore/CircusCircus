@@ -7,12 +7,6 @@ from forum.model import User
 from forum.utl import username_taken, email_taken, valid_username
 
 
-# Not sure if I need this, unclear if one in user.py is sufficient
-@login_manager.user_loader
-def load_user(userid):
-    return User.query.get(userid)
-
-
 """ Change Settings View
 Base view that shows the user settings that can be changed and their action buttons
 """
