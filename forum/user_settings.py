@@ -25,7 +25,7 @@ on error render user settings again with errors
 
 
 @login_required
-@app.route('/action_change_username', methods=['POST'])
+@app.route('/user_settings/action_change_username', methods=['POST'])
 def action_change_username():
 
     # Get the current user name and desired updated user name from the user_settings form
@@ -69,7 +69,7 @@ on error redner user settings html with error this time
 
 
 @login_required
-@app.route('/action_change_email', methods=['POST'])
+@app.route('/user_settings/action_change_email', methods=['POST'])
 def action_change_email():
 
     # Get the current user name and desired updated user name from the user_settings form

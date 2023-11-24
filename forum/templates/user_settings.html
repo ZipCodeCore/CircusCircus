@@ -4,16 +4,16 @@
 <div class="loginbox">
 	<h3>Change Username</h3>
 	<label class="loginelement"><b>Current User Name: </b>{{ current_user.username }}</label>
-	<form action="/action_change_username" method="POST">
+	<form action="/user_settings/action_change_username" method="POST">
 	<input class="loginelement" type="text" placeholder="New username" name="new_username"><br>
 	<input class="loginelement" type="submit" value="Update">
 	</form>
 </div>
-
+<br><br>
 <div class="loginbox">
 	<h3>Change Email</h3>
 	<label class="loginelement"><b>Current Email: </b>{{ current_user.email }}</label>
-	<form action="/action_change_email" method="POST">
+	<form action="/user_settings/action_change_email" method="POST">
 	<input class="loginelement" type="text" placeholder="New email" name="new_email"><br>
 	<input class="loginelement" type="submit" value="Update">
 	</form>
