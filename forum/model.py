@@ -91,9 +91,9 @@ class Comment(db.Model):
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, unique=True)
+    username = db.Column(db.String(255), unique=True)
     password_hash = db.Column(db.Text)
-    email = db.Column(db.Text, unique=True)
+    email = db.Column(db.String(255), unique=True)
     admin = db.Column(db.Boolean, default=False)
     posts = db.relationship("Post", backref="user")
     comments = db.relationship("Comment", backref="user")
@@ -108,7 +108,7 @@ class User(UserMixin, db.Model):
 
 class Subforum(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text, unique=True)
+    title = db.Column(db.String(255), unique=True)
     description = db.Column(db.Text)
     subforums = db.relationship("Subforum")
     parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))

@@ -174,7 +174,7 @@ def init_site():
     add_subforum("Other", "Discuss other things here")
 
 # # db.drop_all()
-# db.create_all()
+db.create_all()
 # if not Subforum.query.all():
 #     init_site()
 

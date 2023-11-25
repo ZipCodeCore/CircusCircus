@@ -2,26 +2,32 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
+
 # from forum.post import post_views
 
 app = Flask(__name__)
 app.config.update(
     TESTING=True,
     SECRET_KEY=b'kristofer',
-	SITE_NAME = "Schooner",
-	SITE_DESCRIPTION = "a schooner forum",
-	SQLALCHEMY_DATABASE_URI='sqlite:////tmp/database.db',
-	DEBUG=True
+    SITE_NAME="Schooner",
+    SITE_DESCRIPTION="a schooner forum",
+    # Old db
+    # SQLALCHEMY_DATABASE_URI='sqlite:////tmp/database.db',
+    # New db
+    SQLALCHEMY_DATABASE_URI='mysql+pymysql://corinne:corinne@localhost/schooner',
+    DEBUG=True
 )
 
 import os
+
 if os.getenv("DATABASE_URL"):
-	app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-	print("setting db url for postgres")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    print("setting db url for postgres")
 else:
-	print("DATABASE_URL is not set, using sqlite")
+    print("DATABASE_URL is not set, using sqlite")
 
 db = SQLAlchemy(app)
+
 
 # def error(errormessage):
 # 	return "<b style=\"color: red;\">" + errormessage + "</b>"
