@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
-
+from forum.config import path
 
 # from forum.post import post_views
 
@@ -14,7 +14,7 @@ app.config.update(
     # Old db
     # SQLALCHEMY_DATABASE_URI='sqlite:////tmp/database.db',
     # New db
-    SQLALCHEMY_DATABASE_URI='mysql+pymysql://corinne:corinne@localhost/schooner',
+    SQLALCHEMY_DATABASE_URI=path,
     DEBUG=True
 )
 
