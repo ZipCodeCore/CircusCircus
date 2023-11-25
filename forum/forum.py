@@ -175,15 +175,15 @@ def init_site():
 
 # # db.drop_all()
 db.create_all()
-# if not Subforum.query.all():
-#     init_site()
+if not Subforum.query.all():
+    init_site()
 
-if __name__ == "__main__":
-    # login_manager = LoginManager()
-    # login_manager.init_app(app)
-    db.create_all()
-    if not Subforum.query.all():
-        subforum.init_site()
+# if __name__ == "__main__":
+#     # login_manager = LoginManager()
+#     # login_manager.init_app(app)
+#     db.create_all()
+#     if not Subforum.query.all():
+#         subforum.init_site()
 
 
 # 	#runsetup()
