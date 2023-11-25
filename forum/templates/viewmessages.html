@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h1>Direct Messages</h1>
+<hr>
+<h3>Received</h3>
+{% for message in received_messages %}
+<p>
+ <b>{{ message.sender_name }}</b>
+ {{ message.content }}
+</p>
+{% endfor %}
+
+{% endblock %}

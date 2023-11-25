@@ -3,6 +3,7 @@
 {% block body %}
 <h1>Username: {{ user.username }} </h1>
 <a class="logoutlink" href="/user_settings">Change My Settings</a>
+<a class="logoutlink" href="/user/view_messages">See My Messages</a>
 <hr>
 <h3>Posts</h3>
 Total Posts: {{ countFunc("post") }}

@@ -64,14 +64,14 @@ def get_count2(count_type, user_id):
     return count
 
 
-""" View to the send message page for a user profile """
+""" View to the send direct message page for a user profile """
 @login_required
 @app.route('/profile/<recipient>/send_message')
 def send_message(recipient):
     return render_template('send_message.html', recipient=recipient)
 
 
-""" View to send the message to the user """
+""" View to send the direct message to the user """
 
 @login_required
 @app.route('/profile/send_message/send', methods=['POST'])
@@ -85,3 +85,21 @@ def send_the_message():
     user.messages_received.append(message)
     db.session.commit()
     return redirect("/")
+
+""" View for viewing direct messages """
+@login_required
+@app.route('/user/view_messages')
+def view_messages():
+    user_id = current_user.id
+    user = User.query.filter_by(id=user_id).first()
+    received_messages = user.messages_received
+    # sender_names = []
+
+    # Get the sender name to print with the message content on page
+    for message in received_messages:
+        sender_id = message.sender_id
+        sender_name = User.query.filter_by(id=sender_id).first().username
+        message.sender_name = sender_name
+        # sender_names.append(sender_name)
+
+    return render_template('viewmessages.html', received_messages=received_messages)
