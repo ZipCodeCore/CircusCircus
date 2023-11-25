@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-
 <h1>Username: {{ user.username }} </h1>
 <a class="logoutlink" href="/user_settings">Change My Settings</a>
 <hr>
 <h3>Posts</h3>
+Total Posts: {{ countFunc("post") }}
 {% for post in posts %}
 <p>
  {{ post.title }}
@@ -14,9 +14,10 @@
 {% endfor %}
 <hr>
 <h3>Comments</h3>
+Total Comments: {{ countFunc("comment") }}
 {% for comment in comments %}
 <p>
- Commented on {{ myFunction(comment.post_id) }}
+ Commented on {{ titleFunc(comment.post_id) }}
  {{ user.username }} said: <b>{{ comment.content }}</b>
 </p>
 {% endfor %}
