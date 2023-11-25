@@ -7,7 +7,7 @@
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
 		<div class="postposter" {% if post.user.admin %} style="color: red;" {% endif %}>
 			{{ post.user.username }}
-
+			<a href="/profile/{{ post.user.username }}"> View Profile</a>
 		</div>
 		<div class="posttime">
 			{{ post.get_time_string() }}
@@ -25,12 +25,8 @@
 	</form>
 </div>
 <div style="text-align: center;">
-
-	
-
 	{% if current_user.is_authenticated %}
 	<input type="button" id="displayaddcomment" onclick="toggle()" value="Add a comment">
-
 	{% else %}
 	<a href="/loginform">Login or register to make a comment</a>
 	{% endif %}
