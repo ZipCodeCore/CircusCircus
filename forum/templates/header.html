@@ -1,4 +1,4 @@
-<a href="/" id="nolinks"><b>{{ config.SITE_NAME }}</b></a>{% if config.SITE_DESCRIPTION %} - {% endif %} <i>{{ config.SITE_DESCRIPTION }}</i>
+<a href="/" id="nolinks"><img src="{{url_for('static', filename="images/spoonvsfork.jpeg")}}", width="100" ,height="100"><b>{{ config.SITE_NAME }}</b></a>{% if config.SITE_DESCRIPTION %} - {% endif %} <i>{{ config.SITE_DESCRIPTION }}</i>
 <div class="login">
 	{% if current_user.is_authenticated %}
 	<b {% if current_user.admin %} style="color: red;" {% endif %}>{{ current_user.username }}</b><a class="logoutlink" href="/action_logout">(logout)</a>
