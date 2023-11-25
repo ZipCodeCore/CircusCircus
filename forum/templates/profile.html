@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+<h1>User: {{ user.username }} </h1>
+<hr>
+{% for post in posts %}
+<p>
+ {{ post.user_id }} says: <b>{{ post.content }}</b>
+</p>
+{% endfor %}
+<hr>
+{% for comment in comments %}
+<p>
+ {{ comment.user_id }} says: <b>{{ comment.content }}</b>
+</p>
+{% endfor %}
+
+{% endblock %}
