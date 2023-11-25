@@ -101,11 +101,3 @@ def action_change_email():
     return redirect("/user_settings")
 
 
-""" Change Settings View
-Base view that shows the user settings that can be changed and their action buttons
-"""
-
-@login_required
-@app.route('/user_settings')
-def user_settings():
-    return render_template("user_settings.html")
