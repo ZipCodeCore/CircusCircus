@@ -44,6 +44,7 @@ def add_subforum(title, description, parent=None):
     return sub
 
 
+
 @login_required
 @app.route('/addpost')
 def addpost():
