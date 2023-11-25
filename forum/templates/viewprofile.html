@@ -3,6 +3,9 @@
 {% block body %}
 <h1>Username: {{ user.username }} </h1>
 <hr>
+{% if current_user.is_authenticated %}
+<a href="/profile/{{ user.username }}/send_message">Send Message</a>
+{% endif %}
 <h3>Posts</h3>
 Total Posts: {{ countFunc2("post", user.id) }}
 {% for post in posts %}

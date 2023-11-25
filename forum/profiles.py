@@ -1,9 +1,11 @@
+import datetime
+
 from flask import *
 import re
 from flask_login import UserMixin, current_user, login_manager, login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from forum.app import db, login_manager, app
-from forum.model import User, Post, Comment
+from forum.model import User, Post, Comment, Message
 from sqlalchemy import select, func
 from forum.utl import username_taken, email_taken, valid_username
 
@@ -36,7 +38,7 @@ def get_post_title(post_id):
     return comment_post_title
 
 
-""" Function to get the count of a type of forum message """
+""" Function to get the count of a type of forum message for users profile """
 
 
 def get_count(count_type):
@@ -49,7 +51,7 @@ def get_count(count_type):
     return count
 
 
-""" Function to get the count of a type of forum message when viewing others profiles"""
+""" Function to get the count of a type of forum message when viewing other users profiles"""
 
 
 def get_count2(count_type, user_id):
@@ -60,3 +62,26 @@ def get_count2(count_type, user_id):
     else:
         count = 0
     return count
+
+
+""" View to the send message page for a user profile """
+@login_required
+@app.route('/profile/<recipient>/send_message')
+def send_message(recipient):
+    return render_template('send_message.html', recipient=recipient)
+
+
+""" View to send the message to the user """
+
+@login_required
+@app.route('/profile/send_message/send', methods=['POST'])
+def send_the_message():
+    recipient = request.args.get("recipient")
+    user = User.query.filter_by(username=recipient).first()
+    content = request.form['content']
+    postdate = datetime.datetime.now()
+    message = Message(content=content, postdate=postdate)
+    current_user.messages_sent.append(message)
+    user.messages_received.append(message)
+    db.session.commit()
+    return redirect("/")

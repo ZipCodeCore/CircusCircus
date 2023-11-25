@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+{% block body %}
+<h1>Send Message to {{ recipient }}</h1>
+<div>
+	<form action="/profile/send_message/send?recipient={{ recipient }}" method="POST">
+		<textarea class="inputbox varwidth" rows="6" name="content" maxlength="200"></textarea><br>
+		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Message">
+	</form>
+</div>
+
+{% endblock %}
