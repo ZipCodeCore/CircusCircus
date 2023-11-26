@@ -3,6 +3,7 @@
 {{ path|safe}}
 
 <div class="actualpost">
+
 	<div class="actualposttitle">
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
 		<div class="postposter" {% if post.user.admin %} style="color: red;" {% endif %}>
@@ -10,10 +11,20 @@
 
 		</div>
 		<div class="posttime">
+			<br>{{ post.Likes|length }}
+		<a href="/like-post/{{post.id}}"><i class="fa-regular fa-thumbs-up"></i></a>
+		<a href="/like-post/{{post.id}}"><i class="fa-regular fa-thumbs-down"></i></a>
+		<a class="fa-regular fa-heart"></a>
+		<a class="fa-regular fa-face-smile"></a>
+		<a class="fa-regular fa-face-sad-tear"></a>
+		<a class="fa-solid fa-hands-clapping"></a><br>
 			{{ post.get_time_string() }}
+
 		</div>
 	</div>
+
 	<div class="postcontent">
+
 		{{post.content}}
 	</div>
 
@@ -38,13 +49,19 @@
 {%if comments%}
 <div class="comments">
 {% for comment in comments %}
-	
 	<div class="comment">
 		<div class="commentuser">
-			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) - 
+			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) -
 		</div>
 		<div class="commentcontent">
-			{{ comment.content }}
+			{{ comment.content }}<br>
+			{{ post.Likes|length }}
+			<a class="fa-regular fa-thumbs-up"></a>
+			<a class="fa-regular fa-thumbs-down"></a>
+			<a class="fa-regular fa-heart"></a>
+			<a class="fa-regular fa-face-smile"></a>
+			<a class="fa-regular fa-face-sad-tear"></a>
+			<a class="fa-solid fa-hands-clapping"></a>
 		</div>
 		
 		<div class="commenttime">
