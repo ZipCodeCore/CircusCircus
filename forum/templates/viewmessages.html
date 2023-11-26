@@ -5,10 +5,11 @@
 <hr>
 <h3>Received</h3>
 {% for message in received_messages %}
+<label>{{ message.sender_name }}</label>
 <p>
- <b>{{ message.sender_name }}</b>
  {{ message.content }}
 </p>
+<a href="/profile/{{ message.sender_name }}/send_message">Reply</a>
 {% endfor %}
 
 {% endblock %}

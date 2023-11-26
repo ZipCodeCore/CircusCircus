@@ -9,15 +9,24 @@ from forum.model import User, Post, Comment, Message
 from sqlalchemy import select, func
 from forum.utl import username_taken, email_taken, valid_username
 
-""" View own profile, changing settings available """
+""" View own profile, changing settings available 
+Using pagination to show 5 posts at a time
+"""
 @login_required
 @app.route('/user/<username>')
 def user_profile(username):
     user = User.query.filter_by(username=username).first()
     user_id = current_user.id
-    posts = Post.query.filter_by(user_id=user_id).all()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.filter_by(user_id=user_id).order_by(Post.postdate.desc()).paginate(page=page, per_page=5, error_out=False)
     comments = Comment.query.filter_by(user_id=user_id).all()
-    return render_template('profile.html', user=user, posts=posts, comments=comments, titleFunc=get_post_title, countFunc=get_count)
+    next_url = url_for('user_profile', page=posts.next_num, username=user.username) \
+        if posts.has_next else None
+    prev_url = url_for('user_profile', page=posts.prev_num, username=user.username) \
+        if posts.has_prev else None
+    return render_template('profile.html', user=user, posts=posts,
+                           comments=comments, titleFunc=get_post_title, countFunc=get_count,
+                           next_url=next_url, prev_url=prev_url)
 
 
 """ View another users profile """
@@ -26,9 +35,19 @@ def user_profile(username):
 def view_profile(username):
     user = User.query.filter_by(username=username).first()
     user_id = user.id
-    posts = Post.query.filter_by(user_id=user_id).all()
-    comments = Comment.query.filter_by(user_id=user_id).all()
-    return render_template('viewprofile.html', user=user, posts=posts, comments=comments, titleFunc=get_post_title, countFunc2=get_count2)
+    if current_user.id == user_id:
+        return redirect(url_for("user_profile", username=user.username))
+    else:
+        page = request.args.get('page', 1, type=int)
+        posts = Post.query.filter_by(user_id=user_id).order_by(Post.postdate.desc()).paginate(page=page, per_page=5, error_out=False)
+        comments = Comment.query.filter_by(user_id=user_id).all()
+        next_url = url_for('view_profile', page=posts.next_num, username=user.username) \
+            if posts.has_next else None
+        prev_url = url_for('view_profile', page=posts.prev_num, username=user.username) \
+            if posts.has_prev else None
+        return render_template('viewprofile.html', user=user,
+                               posts=posts.items, comments=comments, titleFunc=get_post_title, countFunc2=get_count2,
+                               next_url=next_url, prev_url=prev_url)
 
 
 """ Function to get post title for a comment, used in comment title in profile.html """

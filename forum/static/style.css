@@ -19,6 +19,24 @@
 	padding: 0.5%;
 	margin-bottom: none;
 }
+.profileposts{
+	overflow: hidden;
+	vertical-align: middle;
+	padding: 0.5%;
+	margin-bottom: none;
+	border-bottom: dashed;
+}
+.profiletitle{
+	font-size: 15pt;
+	font-weight: bold;
+}
+.counttitle{
+    float: right;
+	margin-left: auto;
+	margin-right: 0;
+	text-align: right;
+}
+
 .content{
 	margin-top: 0.5%;
 }
