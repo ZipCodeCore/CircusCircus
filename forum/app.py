@@ -20,11 +20,11 @@ app.config.update(
 
 import os
 
-if os.getenv("DATABASE_URL"):
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-    print("setting db url for postgres")
-else:
-    print("DATABASE_URL is not set, using sqlite")
+# if os.getenv("DATABASE_URL"):
+#     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+#     print("setting db url for postgres")
+# else:
+#     print("DATABASE_URL is not set, using sqlite")
 
 db = SQLAlchemy(app)
 
