@@ -126,8 +126,8 @@ def like(post_id):
         like1 = Like(user_id=current_user.id, post_id=post_id).first()
         db.session.add(like1)
         db.session.commit()
-
     return redirect(url_for('subforum'))
+
 
 def init_site():
     admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
@@ -136,10 +136,11 @@ def init_site():
     add_subforum("General Discussion", "Use this subforum to post anything you want")
     add_subforum("Other", "Discuss other things here")
 
-# # db.drop_all()
-# db.create_all()
-# if not Subforum.query.all():
-#     init_site()
+
+# db.drop_all()
+db.create_all()
+if not Subforum.query.all():
+    init_site()
 
 if __name__ == "__main__":
     # login_manager = LoginManager()

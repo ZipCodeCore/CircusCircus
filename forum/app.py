@@ -1,16 +1,17 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from forum.config import path
 
 # from forum.post import post_views
 
 app = Flask(__name__)
 app.config.update(
-    TESTING=True,
-    SECRET_KEY=b'kristofer',
+  TESTING=True,
+  SECRET_KEY=b'kristofer',
 	SITE_NAME = "Spoon O Fork",
 	SITE_DESCRIPTION = "a spooner forum",
-	SQLALCHEMY_DATABASE_URI='sqlite:////tmp/database.db',
+  SQLALCHEMY_DATABASE_URI=path,
 	DEBUG=True,
 	FLASK_DEBUG=1,
 	FOOTER_SIGNATURE = "some spoon",
@@ -28,14 +29,14 @@ app.config.update(
 )
 
 import os
-if os.getenv("DATABASE_URL"):
-	app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-	print("setting db url for postgres")
-else:
-	print("DATABASE_URL is not set, using sqlite")
+
+# if os.getenv("DATABASE_URL"):
+#     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+#     print("setting db url for postgres")
+# else:
+#     print("DATABASE_URL is not set, using sqlite")
 
 db = SQLAlchemy(app)
-
 
 
 login_manager = LoginManager()
