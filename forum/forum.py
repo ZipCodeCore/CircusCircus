@@ -26,6 +26,7 @@ def index():
     return render_template("subforums.html", subforums=subforums)
 
 
+
 def add_subforum(title, description, parent=None):
     sub = Subforum(title, description)
     if parent:
@@ -100,18 +101,34 @@ def action_post():
 @login_required
 @app.route('/action_comment', methods=['POST', 'GET'])
 def comment():
+        post_id = int(request.args.get("post"))
+        post = Post.query.filter(Post.id == post_id).first()
+        if not post:
+            return error("That post does not exist!")
+        content = request.form['content']
+        postdate = datetime.datetime.now()
+        comment = Comment(content, postdate)
+        current_user.comments.append(comment)
+        post.comments.append(comment)
+        db.session.commit()
+        return redirect("/viewpost?post=" + str(post_id))
 
-    post_id = int(request.args.get("post"))
-    post = Post.query.filter(Post.id == post_id).first()
+@app.route("/like-post/<post_id>", methods=['GET'])
+def like(post_id):
+    post = Post.query.filter_by(id=post_id)
+    like1 = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
     if not post:
-        return error("That post does not exist!")
-    content = request.form['content']
-    postdate = datetime.datetime.now()
-    comment = Comment(content, postdate)
-    current_user.comments.append(comment)
-    post.comments.append(comment)
-    db.session.commit()
-    return redirect("/viewpost?post=" + str(post_id))
+        flash('Post does not exist.', category='error')
+    elif like1:
+        db.session.delete(like1)
+        db.session.commit()
+    else:
+        like1 = Like(user_id=current_user.id, post_id=post_id).first()
+        db.session.add(like1)
+        db.session.commit()
+
+    return redirect(url_for('subforum'))
+
 def init_site():
     admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
     add_subforum("Announcements", "View forum announcements here",admin)
