@@ -1,9 +1,9 @@
 import datetime
 
-from forum.app import db
-from flask_login import UserMixin, login_manager, login_user, login_required, logout_user
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from forum.app import db
 
 
 class Post(db.Model):
@@ -50,6 +50,7 @@ class Post(db.Model):
 
         return self.savedresponce
 
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
@@ -87,11 +88,12 @@ class Comment(db.Model):
             self.savedresponce = "Just a moment ago!"
         return self.savedresponce
 
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, unique=True)
+    username = db.Column(db.String(255), unique=True)
     password_hash = db.Column(db.Text)
-    email = db.Column(db.Text, unique=True)
+    email = db.Column(db.String(255), unique=True)
     admin = db.Column(db.Boolean, default=False)
     posts = db.relationship("Post", backref="user")
     comments = db.relationship("Comment", backref="user")
@@ -106,7 +108,7 @@ class User(UserMixin, db.Model):
 
 class Subforum(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text, unique=True)
+    title = db.Column(db.String(255), unique=True)
     description = db.Column(db.Text)
     subforums = db.relationship("Subforum")
     parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))

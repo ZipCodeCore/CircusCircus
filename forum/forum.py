@@ -166,6 +166,7 @@ def comment():
     post.comments.append(comment)
     db.session.commit()
     return redirect("/viewpost?post=" + str(post_id))
+
 def init_site():
     admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
     add_subforum("Announcements", "View forum announcements here",admin)
@@ -173,10 +174,11 @@ def init_site():
     add_subforum("General Discussion", "Use this subforum to post anything you want")
     add_subforum("Other", "Discuss other things here")
 
-# # db.drop_all()
-# db.create_all()
-# if not Subforum.query.all():
-#     init_site()
+
+# db.drop_all()
+db.create_all()
+if not Subforum.query.all():
+    init_site()
 
 if __name__ == "__main__":
     # login_manager = LoginManager()
