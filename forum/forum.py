@@ -28,6 +28,7 @@ def index():
     return render_template("subforums.html", subforums=subforums)
 
 
+
 def add_subforum(title, description, parent=None):
     sub = Subforum(title, description)
     if parent:
@@ -44,60 +45,6 @@ def add_subforum(title, description, parent=None):
     print("adding " + title)
     db.session.commit()
     return sub
-
-# @login_required
-# @app.route('/addpost')
-# def addpost():
-#     subforum_id = int(request.args.get("sub"))
-#     subforum = Subforum.query.filter(Subforum.id == subforum_id).first()
-#     if not subforum:
-#         return error("That subforum does not exist!")
-#
-#     return render_template("createpost.html", subforum=subforum)
-#
-#
-#
-# @login_required
-# @app.route('/action_post', methods=['POST'])
-# def action_post():
-#     subforum_id = int(request.args.get("sub"))
-#     subforum = Subforum.query.filter(Subforum.id == subforum_id).first()
-#     if not subforum:
-#         return redirect(url_for("subforums"))
-#
-#     user = current_user
-#     title = request.form['title']
-#     content = request.form['content']
-#     # check for valid posting
-#     errors = []
-#     retry = False
-#     if not valid_title(title):
-#         errors.append("Title must be between 4 and 140 characters long!")
-#         retry = True
-#     if not valid_content(content):
-#         errors.append("Post must be between 10 and 5000 characters long!")
-#         retry = True
-#     if retry:
-#         return render_template("createpost.html", subforum=subforum, errors=errors)
-#     post = Post(title, content, datetime.datetime.now())
-#     subforum.posts.append(post)
-#     user.posts.append(post)
-#     db.session.commit()
-#     return redirect("/viewpost?post=" + str(post.id))
-#
-#
-#
-# @app.route('/viewpost')
-# def viewpost():
-#     postid = int(request.args.get("post"))
-#     post = Post.query.filter(Post.id == postid).first()
-#     if not post:
-#         return error("That post does not exist!")
-#     if not post.subforum.path:
-#         subforumpath = generateLinkPath(post.subforum.id)
-#     comments = Comment.query.filter(Comment.post_id == postid).order_by(
-#         Comment.id.desc())  # no need for scalability now
-#     return render_template("viewpost.html", post=post, path=subforumpath, comments=comments)
 
 
 
@@ -156,18 +103,34 @@ def action_post():
 @login_required
 @app.route('/action_comment', methods=['POST', 'GET'])
 def comment():
+        post_id = int(request.args.get("post"))
+        post = Post.query.filter(Post.id == post_id).first()
+        if not post:
+            return error("That post does not exist!")
+        content = request.form['content']
+        postdate = datetime.datetime.now()
+        comment = Comment(content, postdate)
+        current_user.comments.append(comment)
+        post.comments.append(comment)
+        db.session.commit()
+        return redirect("/viewpost?post=" + str(post_id))
 
-    post_id = int(request.args.get("post"))
-    post = Post.query.filter(Post.id == post_id).first()
+@app.route("/like-post/<post_id>", methods=['GET'])
+def like(post_id):
+    post = Post.query.filter_by(id=post_id)
+    like1 = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
     if not post:
-        return error("That post does not exist!")
-    content = request.form['content']
-    postdate = datetime.datetime.now()
-    comment = Comment(content, postdate)
-    current_user.comments.append(comment)
-    post.comments.append(comment)
-    db.session.commit()
-    return redirect("/viewpost?post=" + str(post_id))
+        flash('Post does not exist.', category='error')
+    elif like1:
+        db.session.delete(like1)
+        db.session.commit()
+    else:
+        like1 = Like(user_id=current_user.id, post_id=post_id).first()
+        db.session.add(like1)
+        db.session.commit()
+    return redirect(url_for('subforum'))
+
+
 def init_site():
     admin = add_subforum("Forum", "Announcements, bug reports, and general discussion about the forum belongs here")
     add_subforum("Announcements", "View forum announcements here",admin)
@@ -175,10 +138,11 @@ def init_site():
     add_subforum("General Discussion", "Use this subforum to post anything you want")
     add_subforum("Other", "Discuss other things here")
 
-# # db.drop_all()
-# db.create_all()
-# if not Subforum.query.all():
-#     init_site()
+
+# db.drop_all()
+db.create_all()
+if not Subforum.query.all():
+    init_site()
 
 if __name__ == "__main__":
     # login_manager = LoginManager()

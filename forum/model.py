@@ -1,9 +1,9 @@
 import datetime
 
-from forum.app import db
-from flask_login import UserMixin, login_manager, login_user, login_required, logout_user
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from forum.app import db
 
 
 class Post(db.Model):
@@ -11,6 +11,7 @@ class Post(db.Model):
     title = db.Column(db.Text)
     content = db.Column(db.Text)
     comments = db.relationship("Comment", backref="post")
+    likes = db.relationship("Like", backref="post")
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     subforum_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
     postdate = db.Column(db.DateTime)
@@ -50,6 +51,26 @@ class Post(db.Model):
 
         return self.savedresponce
 
+
+    def emoji_code(self, new_emoji_code):
+        emoji_mapping = {
+            ":smiley:": "😊",
+            ":sad:": "😢",
+            ":angry:": "😡",
+            ":heart:": "❤️",
+            ":thumbs_up:": "👍",
+            ":thumbs_down:": "👎",
+            ":hand_clap:": "👏",
+        }
+
+        if new_emoji_code in emoji_mapping:
+            self.emoji = emoji_mapping[new_emoji_code]
+            return True
+        else:
+            print(f"Invalid emoji input: {new_emoji_code}")
+            return False
+
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
@@ -59,6 +80,12 @@ class Comment(db.Model):
 
     lastcheck = None
     savedresponce = None
+
+
+
+
+    def get_comments_for_post(post_id):
+        return Comment.query.filter_by(post_id=post_id.id).order_by(Comment.postdate.desc()).all()
 
     def __init__(self, content, postdate):
         self.content = content
@@ -87,17 +114,24 @@ class Comment(db.Model):
             self.savedresponce = "Just a moment ago!"
         return self.savedresponce
 
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, unique=True)
+    username = db.Column(db.String(255), unique=True)
     password_hash = db.Column(db.Text)
-    email = db.Column(db.Text, unique=True)
+    email = db.Column(db.String(255), unique=True)
     admin = db.Column(db.Boolean, default=False)
     posts = db.relationship("Post", backref="user")
     comments = db.relationship("Comment", backref="user")
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='author')
     messages_received = db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient')
     last_message_read_time = db.Column(db.DateTime)
+    likes = db.relationship("Like", backref="user")
+
+
+
+
+
 
     def __init__(self, email, username, password):
         self.email = email
@@ -115,7 +149,7 @@ class User(UserMixin, db.Model):
 
 class Subforum(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text, unique=True)
+    title = db.Column(db.String(255), unique=True)
     description = db.Column(db.Text)
     subforums = db.relationship("Subforum")
     parent_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
@@ -123,9 +157,14 @@ class Subforum(db.Model):
     path = None
     hidden = db.Column(db.Boolean, default=False)
 
-    def __init__(self, title, description):
-        self.title = title
-        self.description = description
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    postdate = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+def __init__(self, title, description):
+    self.title = title
+    self.description = description
 
 
 def generateLinkPath(subforumid):
