@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h1>Direct Messages</h1>
+<hr>
+<h3>Received</h3>
+{% for message in received_messages %}
+<label>{{ message.sender_name }}</label>
+<p>
+ {{ message.content }}
+</p>
+<a href="/profile/{{ message.sender_name }}/send_message">Reply</a>
+{% endfor %}
+
+{% endblock %}

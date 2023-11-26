@@ -5,11 +5,9 @@ gunicorn
 itsdangerous
 Jinja2
 MarkupSafe
-
 SQLAlchemy
 Werkzeug
 wheel
 honcho
-
 cryptography
 pymysql

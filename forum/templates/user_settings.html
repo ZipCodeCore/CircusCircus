@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h3><a href="/user/{{ current_user.username }}">Go to Profile</a></h3>
+<br>
+<div class="loginbox">
+	<h3>Change Username</h3>
+	<label class="loginelement"><b>Current User Name: </b>{{ current_user.username }}</label>
+	<form action="/user_settings/action_change_username" method="POST">
+	<input class="loginelement" type="text" placeholder="new_username" name="new_username"><br>
+	<input class="loginelement" type="submit" value="Update">
+	</form>
+</div>
+<br><br>
+<div class="loginbox">
+	<h3>Change Email</h3>
+	<label class="loginelement"><b>Current Email: </b>{{ current_user.email }}</label>
+	<form action="/user_settings/action_change_email" method="POST">
+	<input class="loginelement" type="text" placeholder="New email" name="new_email"><br>
+	<input class="loginelement" type="submit" value="Update">
+	</form>
+</div>
+
+
+{% endblock %}

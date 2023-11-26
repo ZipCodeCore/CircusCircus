@@ -1,0 +1,41 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h1>Username: {{ user.username }} </h1>
+{% if current_user.is_authenticated %}
+<a href="/profile/{{ user.username }}/send_message">Send Message</a>
+{% endif %}
+<hr>
+<div class="profileposts">
+  <b class="profiletitle">Posts: </b>
+  <div class="counttitle"> Total Posts: {{ countFunc2("post", user.id) }} </div>
+</div>
+{% for post in posts %}
+<h4> {{ post.title }} </h4>
+<p>
+ {{ user.username }} said: <b>{{ post.content }}</b>
+</p>
+ <div class="date">
+ {{ post.get_time_string() }}
+ </div>
+{% endfor %}
+{% if prev_url %}
+<a href="{{ prev_url }}">Newer Posts</a>
+{% endif %}
+{% if next_url %}
+<a href="{{ next_url }}">Older Posts</a>
+{% endif %}
+<hr>
+<div class="profileposts">
+  <b class="profiletitle">Comments: </b>
+  <div class="counttitle"> Total Comments: {{ countFunc2("comment", user.id) }} </div>
+</div>
+<br>
+{% for comment in comments %}
+<p>
+ Commented on {{ titleFunc(comment.post_id) }}
+ {{ user.username }} said: <b>{{ comment.content }}</b>
+</p>
+{% endfor %}
+
+{% endblock %}

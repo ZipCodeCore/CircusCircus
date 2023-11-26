@@ -1,0 +1,42 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<h2>Username: {{ user.username }} </h2>
+<a class="logoutlink" href="/user_settings">Change My Settings</a>  |
+<a class="logoutlink" href="/user/view_messages">See My Messages</a>
+<hr>
+<div class="profileposts">
+  <b class="profiletitle">Posts: </b>
+  <div class="counttitle"> Total Posts: {{ countFunc("post") }} </div>
+</div>
+<br>
+{% for post in posts %}
+<h4><b>{{ post.title }}</b></h4>
+<p>
+ I said: <i>{{ post.content }}</i>
+</p>
+<div class="date">
+{{ post.get_time_string() }}
+</div>
+<br>
+{% endfor %}
+{% if prev_url %}
+<a href="{{ prev_url }}">Newer Posts</a>
+{% endif %}
+{% if next_url %}
+<a href="{{ next_url }}">Older Posts</a>
+{% endif %}
+<hr>
+<div class="profileposts">
+  <b class="profiletitle">Comments: </b>
+  <div class="counttitle"> Total Comments: {{ countFunc("comment") }} </div>
+</div>
+<br>
+{% for comment in comments %}
+<p>
+ Commented on {{ titleFunc(comment.post_id) }}
+ I said: <b>{{ comment.content }}</b>
+</p>
+{% endfor %}
+
+{% endblock %}

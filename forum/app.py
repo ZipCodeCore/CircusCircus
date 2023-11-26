@@ -1,7 +1,11 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+
+from flask_migrate import Migrate
+
 from forum.config import path
+
 
 # from forum.post import post_views
 
@@ -36,8 +40,9 @@ import os
 # else:
 #     print("DATABASE_URL is not set, using sqlite")
 
-db = SQLAlchemy(app)
 
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

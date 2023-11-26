@@ -123,7 +123,11 @@ class User(UserMixin, db.Model):
     admin = db.Column(db.Boolean, default=False)
     posts = db.relationship("Post", backref="user")
     comments = db.relationship("Comment", backref="user")
+    messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='author')
+    messages_received = db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient')
+    last_message_read_time = db.Column(db.DateTime)
     likes = db.relationship("Like", backref="user")
+
 
 
 
@@ -133,8 +137,14 @@ class User(UserMixin, db.Model):
         self.email = email
         self.username = username
         self.password_hash = generate_password_hash(password)
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def new_messages(self):
+        from datetime import datetime
+        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
+        return Message.query.filter_by(recipient=self).filter(Message.timestamp > last_read_time).count()
 
 
 class Subforum(db.Model):
@@ -170,3 +180,14 @@ def generateLinkPath(subforumid):
     for l in reversed(links):
         link = link + " / " + l
     return link
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    content = db.Column(db.String(200))
+    postdate = db.Column(db.DateTime)
+
+    def __init__(self, content, postdate):
+        self.content = content
+        self.postdate = postdate
