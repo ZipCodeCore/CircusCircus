@@ -52,25 +52,6 @@ class Post(db.Model):
         return self.savedresponce
 
 
-    def emoji_code(self, new_emoji_code):
-        emoji_mapping = {
-            ":smiley:": "😊",
-            ":sad:": "😢",
-            ":angry:": "😡",
-            ":heart:": "❤️",
-            ":thumbs_up:": "👍",
-            ":thumbs_down:": "👎",
-            ":hand_clap:": "👏",
-        }
-
-        if new_emoji_code in emoji_mapping:
-            self.emoji = emoji_mapping[new_emoji_code]
-            return True
-        else:
-            print(f"Invalid emoji input: {new_emoji_code}")
-            return False
-
-
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
@@ -162,9 +143,9 @@ class Like(db.Model):
     postdate = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
-def __init__(self, title, description):
-    self.title = title
-    self.description = description
+    def __init__(self, title, description):
+        self.title = title
+        self.description = description
 
 
 def generateLinkPath(subforumid):
