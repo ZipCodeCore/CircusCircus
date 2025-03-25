@@ -33,9 +33,10 @@ I had to make a bunch of changes in this code to get it running. Took far longer
 But now, if I have it right, you need to clone this and then
 
 This currently puts a sqlite3 db in the /tmp directory.
+(use atleast python 3.11)
 
 ```
-$ python3 -m venv venv
+$ python3.11 -m venv venv
 $ source venv/bin/activate
 $ pip install -r requirements.txt
 $ ./run.sh
